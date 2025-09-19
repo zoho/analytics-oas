@@ -7,36 +7,7 @@
     },
     "servers": [
         {
-            "url": "https://analyticsapi.zoho.com",
-            "description": "US Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.eu",
-            "description": "EU Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.in",
-            "description": "IN Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.com.au",
-            "description": "AU Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.com.cn",
-            "description": "CN Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.jp",
-            "description": "JP Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.sa",
-            "description": "SA Server"
-        },
-        {
-            "url": "https://analyticsapi.zohocloud.ca",
-            "description": "CA Server"
+            "url": "https://analyticsapi.zoho.com"
         }
     ],
     "tags": [
@@ -876,10 +847,25 @@
             }
         },
         "securitySchemes": {
-            "iam-oauth2-schema": {
-                "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/securitySchemes/iam-oauth2-schema"
+      "iam-oauth2-schema": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://accounts.zoho.com/oauth/v2/auth",
+            "tokenUrl": "https://accounts.zoho.com/oauth/v2/token",
+            "refreshUrl": "https://accounts.zoho.com/oauth/v2/token",
+            "scopes": {
+              "ZohoAnalytics.share.create": "Create shared items in Zoho Analytics.",
+              "ZohoAnalytics.share.delete": "Delete shared items in Zoho Analytics.",
+              "ZohoAnalytics.share.read": "Read shared items in Zoho Analytics.",
+              "ZohoAnalytics.share.update": "Update shared items in Zoho Analytics.",
+              "ZohoAnalytics.share.all": "Full access to shared items in Zoho Analytics.",
+              "ZohoAnalytics.fullaccess.all": "Full access to all Zoho Analytics features."
             }
-        },
+          }
+        }
+      }
+    },
         "schemas": {
             "GetOrgAdminsResponse": {
                 "type": "object",

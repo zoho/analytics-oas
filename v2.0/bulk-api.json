@@ -7,36 +7,7 @@
     },
     "servers": [
         {
-            "url": "https://analyticsapi.zoho.com",
-            "description": "US Data Center"
-        },
-        {
-            "url": "https://analyticsapi.zoho.eu",
-            "description": "EU Data Center"
-        },
-        {
-            "url": "https://analyticsapi.zoho.in",
-            "description": "IN Data Center"
-        },
-        {
-            "url": "https://analyticsapi.zoho.com.au",
-            "description": "AU Data Center"
-        },
-        {
-            "url": "https://analyticsapi.zoho.com.cn",
-            "description": "CN Data Center"
-        },
-        {
-            "url": "https://analyticsapi.zoho.jp",
-            "description": "JP Data Center"
-        },
-        {
-            "url": "https://analyticsapi.zoho.sa",
-            "description": "SA Data Center"
-        },
-        {
-            "url": "https://analyticsapi.zohocloud.ca",
-            "description": "CA Data Center"
+            "url": "https://analyticsapi.zoho.com"
         }
     ],
     "security": [
@@ -1086,10 +1057,25 @@
     },
     "components": {
         "securitySchemes": {
-            "iam-oauth2-schema": {
-                "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/securitySchemes/iam-oauth2-schema"
+      "iam-oauth2-schema": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://accounts.zoho.com/oauth/v2/auth",
+            "tokenUrl": "https://accounts.zoho.com/oauth/v2/token",
+            "refreshUrl": "https://accounts.zoho.com/oauth/v2/token",
+            "scopes": {
+              "ZohoAnalytics.data.read": "Read data from Zoho Analytics.",
+              "ZohoAnalytics.data.delete": "Delete data from Zoho Analytics.",
+              "ZohoAnalytics.data.update": "Update data in Zoho Analytics.",
+              "ZohoAnalytics.data.create": "Create data in Zoho Analytics.",
+              "ZohoAnalytics.data.all": "Full access to data in Zoho Analytics.",
+              "ZohoAnalytics.fullaccess.all": "Full access to all Zoho Analytics features."
             }
-        },
+          }
+        }
+      }
+    },
         "parameters": {
             "org-id": {
                 "name": "ZANALYTICS-ORGID",

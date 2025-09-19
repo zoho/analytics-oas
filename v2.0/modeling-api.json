@@ -7,36 +7,7 @@
     },
     "servers": [
         {
-            "url": "https://analyticsapi.zoho.com",
-            "description": "US Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.eu",
-            "description": "EU Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.in",
-            "description": "IN Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.com.au",
-            "description": "AU Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.com.cn",
-            "description": "CN Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.jp",
-            "description": "JP Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.sa",
-            "description": "SA Server"
-        },
-        {
-            "url": "https://analyticsapi.zohocloud.ca",
-            "description": "CA Server"
+            "url": "https://analyticsapi.zoho.com"
         }
     ],
     "tags": [
@@ -817,7 +788,7 @@
             }
         },
         "/restapi/v2/workspaces/{workspace-id}/views/movetofolder": {
-            "post": {
+            "put": {
                 "tags": [
                     "Modeling APIs"
                 ],
@@ -3109,10 +3080,24 @@
             }
         },
         "securitySchemes": {
-            "iam-oauth2-schema": {
-                "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/securitySchemes/iam-oauth2-schema"
+      "iam-oauth2-schema": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://accounts.zoho.com/oauth/v2/auth",
+            "tokenUrl": "https://accounts.zoho.com/oauth/v2/token",
+            "refreshUrl": "https://accounts.zoho.com/oauth/v2/token",
+            "scopes": {
+              "ZohoAnalytics.modeling.delete": "Delete modeling objects in Zoho Analytics.",
+              "ZohoAnalytics.modeling.update": "Update modeling objects in Zoho Analytics.",
+              "ZohoAnalytics.modeling.create": "Create modeling objects in Zoho Analytics.",
+              "ZohoAnalytics.modeling.all": "Full access to modeling objects in Zoho Analytics.",
+              "ZohoAnalytics.fullaccess.all": "Full access to all Zoho Analytics features."
             }
-        },
+          }
+        }
+      }
+    },
         "schemas": {
             "CreateWorkspaceConfig": {
                 "type": "object",
@@ -4111,7 +4096,7 @@
                         "type": "boolean",
                         "description": "To mark as personal data column. Default is false."
                     },
-                    "GEOROLE": {
+                    "geoRole": {
                         "type": "integer",
                         "description": "To specify the geo location type. Required if dataType is GEO.",
                         "enum": [
@@ -4136,7 +4121,7 @@
                         "columnName": "Region",
                         "dataType": "GEO",
                         "isPIIColumn": false,
-                        "GEOROLE": 2
+                        "geoRole": 2
                     }
                 ]
             },

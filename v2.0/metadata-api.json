@@ -7,36 +7,7 @@
     },
     "servers": [
         {
-            "url": "https://analyticsapi.zoho.com",
-            "description": "US Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.eu",
-            "description": "EU Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.in",
-            "description": "IN Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.com.au",
-            "description": "AU Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.com.cn",
-            "description": "CN Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.jp",
-            "description": "JP Server"
-        },
-        {
-            "url": "https://analyticsapi.zoho.sa",
-            "description": "SA Server"
-        },
-        {
-            "url": "https://analyticsapi.zohocloud.ca",
-            "description": "CA Server"
+            "url": "https://analyticsapi.zoho.com"
         }
     ],
     "tags": [
@@ -46,7 +17,7 @@
         }
     ],
     "paths": {
-        "/organizations": {
+        "/restapi/v2/orgs": {
             "get": {
                 "operationId": "getOrganizations",
                 "summary": "Get organizations",
@@ -79,7 +50,7 @@
                 }
             }
         },
-        "/workspaces": {
+        "/restapi/v2/workspaces": {
             "get": {
                 "operationId": "getAllWorkspaces",
                 "summary": "Get all workspaces",
@@ -116,7 +87,7 @@
                 }
             }
         },
-        "/workspaces/owned": {
+        "/restapi/v2/workspaces/owned": {
             "get": {
                 "operationId": "getOwnedWorkspaces",
                 "summary": "Get owned workspaces",
@@ -153,7 +124,7 @@
                 }
             }
         },
-        "/workspaces/shared": {
+        "/restapi/v2/workspaces/shared": {
             "get": {
                 "operationId": "getSharedWorkspaces",
                 "summary": "Get shared workspaces",
@@ -374,7 +345,7 @@
                 }
             }
         },
-        "/dashboards/owned": {
+        "/restapi/v2/dashboards/owned": {
             "get": {
                 "tags": [
                     "Metadata APIs"
@@ -405,7 +376,7 @@
                 }
             }
         },
-        "/dashboards/shared": {
+        "/restapi/v2/dashboards/shared": {
             "get": {
                 "tags": [
                     "Metadata APIs"
@@ -436,7 +407,7 @@
                 }
             }
         },
-        "/workspaces/{workspace-id}/secretkey": {
+        "/restapi/v2/workspaces/{workspace-id}/secretkey": {
             "get": {
                 "tags": [
                     "Metadata APIs"
@@ -451,6 +422,9 @@
                 "summary": "Get Workspace Secret Key",
                 "operationId": "getWorkspaceSecretKey",
                 "parameters": [
+                    {
+                        "$ref": "#/components/parameters/org-id"
+                    },
                     {
                         "$ref": "#/components/parameters/workspace-id"
                     }
@@ -472,7 +446,7 @@
                 }
             }
         },
-        "/workspaces/{workspace-id}": {
+        "/restapi/v2/workspaces/{workspace-id}": {
             "get": {
                 "tags": [
                     "Metadata APIs"
@@ -894,7 +868,7 @@
                 }
             }
         },
-        "/workspaces/{workspace-id}/views/{view-id}/customformulas": {
+        "/restapi/v2/workspaces/{workspace-id}/views/{view-id}/customformulas": {
             "get": {
                 "summary": "Get Custom Formula List",
                 "description": "Returns list of all formula columns for the specified table.",
@@ -934,7 +908,7 @@
                 }
             }
         },
-        "/workspaces/{workspace-id}/views/{view-id}/aggregateformulas": {
+        "/restapi/v2/workspaces/{workspace-id}/views/{view-id}/aggregateformulas": {
             "get": {
                 "summary": "Get Aggregate Formula List",
                 "description": "Returns list of all aggregate formulas for the specified table.",
@@ -974,7 +948,7 @@
                 }
             }
         },
-        "/workspaces/{workspace-id}/aggregateformulas": {
+        "/restapi/v2/workspaces/{workspace-id}/aggregateformulas": {
             "get": {
                 "summary": "Get Aggregate Formulas In Workspace",
                 "description": "Returns list of all aggregate formulas for the specified workspace.",
@@ -1011,7 +985,7 @@
                 }
             }
         },
-        "/workspaces/{workspace-id}/aggregateformulas/{formula-id}/dependents": {
+        "/restapi/v2/workspaces/{workspace-id}/aggregateformulas/{formula-id}/dependents": {
             "get": {
                 "summary": "Get Aggregate Formula Dependents",
                 "description": "Returns list of all dependent views and formulas for the specified aggregate formula.",
@@ -1057,7 +1031,7 @@
                 }
             }
         },
-        "/workspaces/{workspace-id}/aggregateformulas/{formula-id}/value": {
+        "/restapi/v2/workspaces/{workspace-id}/aggregateformulas/{formula-id}/value": {
             "get": {
                 "summary": "Get Aggregate Formula Value",
                 "description": "Returns the value of the aggregate formula.",
@@ -1498,10 +1472,25 @@
             }
         },
         "securitySchemes": {
-            "iam-oauth2-schema": {
-                "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/securitySchemes/iam-oauth2-schema"
+      "iam-oauth2-schema": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://accounts.zoho.com/oauth/v2/auth",
+            "tokenUrl": "https://accounts.zoho.com/oauth/v2/token",
+            "refreshUrl": "https://accounts.zoho.com/oauth/v2/token",
+            "scopes": {
+              "ZohoAnalytics.metadata.read": "Read metadata resource from Zoho Analytics.",
+              "ZohoAnalytics.metadata.delete": "Delete metadata resource from Zoho Analytics.",
+              "ZohoAnalytics.metadata.update": "Update metadata resource in Zoho Analytics.",
+              "ZohoAnalytics.metadata.create": "Create metadata resource in Zoho Analytics.",
+              "ZohoAnalytics.metadata.all": "Full access to metadata in Zoho Analytics.",
+              "ZohoAnalytics.fullaccess.all": "Full access to all Zoho Analytics features."
             }
-        },
+          }
+        }
+      }
+    },
         "schemas": {
             "GetOrganizationsResponse": {
                 "type": "object",
