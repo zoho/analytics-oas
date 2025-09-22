@@ -357,7 +357,7 @@
                 }
             }
         },
-        "/bulk/restapi/v2/workspaces/{workspace-id}/data/batch": {
+        "/restapi/v2/bulk/workspaces/{workspace-id}/data/batch": {
             "post": {
                 "tags": [
                     "Bulk Import - Batch"
@@ -453,7 +453,7 @@
                 }
             }
         },
-        "/bulk/restapi/v2/workspaces/{workspace-id}/views/{view-id}/data/batch": {
+        "/restapi/v2/bulk/workspaces/{workspace-id}/views/{view-id}/data/batch": {
             "post": {
                 "tags": [
                     "Bulk Import - Batch"
@@ -552,7 +552,7 @@
                 }
             }
         },
-        "/bulk/restapi/v2/workspaces/{workspace-id}/data": {
+        "/restapi/v2/bulk/workspaces/{workspace-id}/data": {
             "get": {
                 "tags": [
                     "Bulk Export - Asynchronous"
@@ -707,7 +707,7 @@
                 }
             }
         },
-        "/bulk/restapi/v2/workspaces/{workspace-id}/views/{view-id}/data": {
+        "/restapi/v2/bulk/workspaces/{workspace-id}/views/{view-id}/data": {
             "get": {
                 "tags": [
                     "Bulk Export - Asynchronous"
@@ -871,7 +871,7 @@
                 }
             }
         },
-        "/bulk/restapi/v2/workspaces/{workspace-id}/importjobs/{job-id}": {
+        "/restapi/v2/bulk/workspaces/{workspace-id}/importjobs/{job-id}": {
             "get": {
                 "tags": [
                     "Bulk Import - Asynchronous"
@@ -950,7 +950,7 @@
                 }
             }
         },
-        "/bulk/restapi/v2/workspaces/{workspace-id}/exportjobs/{job-id}": {
+        "/restapi/v2/bulk/workspaces/{workspace-id}/exportjobs/{job-id}": {
             "get": {
                 "tags": [
                     "Bulk Export - Asynchronous"
@@ -1008,7 +1008,7 @@
                 }
             }
         },
-        "/bulk/restapi/v2/workspaces/{workspace-id}/exportjobs/{job-id}/data": {
+        "/restapi/v2/bulk/workspaces/{workspace-id}/exportjobs/{job-id}/data": {
             "get": {
                 "tags": [
                     "Bulk Export - Asynchronous"
