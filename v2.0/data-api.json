@@ -43,26 +43,28 @@
           }
         ],
         "requestBody": {
-  "required": true,
-  "content": {
-    "application/x-www-form-urlencoded": {
-      "schema": {
-        "type": "object",
-        "properties": {
-          "CONFIG": {
-            "$ref": "#/components/schemas/AddRowConfig"
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "CONFIG": {
+                    "$ref": "#/components/schemas/AddRowConfig"
+                  }
+                },
+                "required": [
+                  "CONFIG"
+                ]
+              },
+              "encoding": {
+                "CONFIG": {
+                  "contentType": "application/json"
+                }
+              }
             }
+          }
         },
-        "required": ["CONFIG"]
-      },
-      "encoding": {
-        "CONFIG": {
-          "contentType": "application/json"
-        }
-      }
-    }
-  }
-},
         "security": [
           {
             "iam-oauth2-schema": [
@@ -145,26 +147,28 @@
           }
         ],
         "requestBody": {
-  "required": true,
-  "content": {
-    "application/x-www-form-urlencoded": {
-      "schema": {
-        "type": "object",
-        "properties": {
-          "CONFIG": {
-            "$ref": "#/components/schemas/UpdateRowsConfig"
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "CONFIG": {
+                    "$ref": "#/components/schemas/UpdateRowsConfig"
+                  }
+                },
+                "required": [
+                  "CONFIG"
+                ]
+              },
+              "encoding": {
+                "CONFIG": {
+                  "contentType": "application/json"
+                }
+              }
             }
+          }
         },
-        "required": ["CONFIG"]
-      },
-      "encoding": {
-        "CONFIG": {
-          "contentType": "application/json"
-        }
-      }
-    }
-  }
-},
         "security": [
           {
             "iam-oauth2-schema": [
@@ -251,26 +255,28 @@
           }
         ],
         "requestBody": {
-  "required": true,
-  "content": {
-    "application/x-www-form-urlencoded": {
-      "schema": {
-        "type": "object",
-        "properties": {
-          "CONFIG": {
-            "$ref": "#/components/schemas/DeleteRowsConfig"
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "CONFIG": {
+                    "$ref": "#/components/schemas/DeleteRowsConfig"
+                  }
+                },
+                "required": [
+                  "CONFIG"
+                ]
+              },
+              "encoding": {
+                "CONFIG": {
+                  "contentType": "application/json"
+                }
+              }
             }
+          }
         },
-        "required": ["CONFIG"]
-      },
-      "encoding": {
-        "CONFIG": {
-          "contentType": "application/json"
-        }
-      }
-    }
-  }
-},
         "security": [
           {
             "iam-oauth2-schema": [
@@ -372,35 +378,43 @@
           "columns": {
             "type": "object",
             "description": "JSONObject with column name as key and data as value.",
-            "examples": [{
-              "columnName1": "value1",
-              "columnName2": "value2"
-            }]
+            "examples": [
+              {
+                "columnName1": "value1",
+                "columnName2": "value2"
+              }
+            ]
           },
           "dateFormat": {
             "type": "string",
             "description": "Specify this in-case any date field is being added and its format cannot be auto recognized.",
-            "examples": ["dd-MMM-YYYY"]
+            "examples": [
+              "dd-MMM-YYYY"
+            ]
           },
           "columnDateFormat": {
             "type": "object",
             "description": "Specify this in case multiple date fields are being imported having different format each. Column name as key and date format as value.",
-            "examples": [{
-              "columnName1": "dd-MMM-YYYY",
-              "columnName2": "MM/dd/yyyy"
-            }]
+            "examples": [
+              {
+                "columnName1": "dd-MMM-YYYY",
+                "columnName2": "MM/dd/yyyy"
+              }
+            ]
           }
         },
         "required": [
           "columns"
         ],
-        "examples": [{
-          "columns": {
-            "Region": "East",
-            "Sales": "1000"
-          },
-          "dateFormat": "dd-MMM-YYYY"
-        }]
+        "examples": [
+          {
+            "columns": {
+              "Region": "East",
+              "Sales": "1000"
+            },
+            "dateFormat": "dd-MMM-YYYY"
+          }
+        ]
       },
       "DeleteRowsConfig": {
         "type": "object",
@@ -409,17 +423,23 @@
           "criteria": {
             "type": "string",
             "description": "If criteria is sent, then the rows matching the criteria alone are deleted.",
-            "examples": ["\"Sales Table\".\"Region\"='West'"]
+            "examples": [
+              "\"Sales Table\".\"Region\"='West'"
+            ]
           },
           "deleteAllRows": {
             "type": "boolean",
             "description": "To delete all the rows in the table.",
-            "examples": [true]
+            "examples": [
+              true
+            ]
           }
         },
-        "examples": [{
-          "criteria": "\"Sales Table\".\"Region\"='West'"
-        }]
+        "examples": [
+          {
+            "criteria": "\"Sales Table\".\"Region\"='West'"
+          }
+        ]
       },
       "UpdateRowsConfig": {
         "type": "object",
@@ -428,56 +448,70 @@
           "columns": {
             "type": "object",
             "description": "JSONObject with column name as key and data as value.",
-            "examples": [{
-              "columnName1": "value1",
-              "columnName2": "value2"
-            }]
+            "examples": [
+              {
+                "columnName1": "value1",
+                "columnName2": "value2"
+              }
+            ]
           },
           "criteria": {
             "type": "string",
             "description": "If criteria is sent, then the rows matching the criteria alone are updated.",
-            "examples": ["\"Sales Table\".\"Region\"='East'"]
+            "examples": [
+              "\"Sales Table\".\"Region\"='East'"
+            ]
           },
           "updateAllRows": {
             "type": "boolean",
             "description": "To update all the rows in the table.",
-            "examples": [true]
+            "examples": [
+              true
+            ]
           },
           "addIfNotExist": {
             "type": "boolean",
             "description": "It controls whether to add a new row with the provided details if the provided criteria doesn't matches with the existing data.",
             "default": false,
-            "examples": [false]
+            "examples": [
+              false
+            ]
           },
           "dateFormat": {
             "type": "string",
             "description": "Specify this in-case any date field is being added and its format cannot be auto recognized.",
-            "examples": ["dd-MMM-YYYY"]
+            "examples": [
+              "dd-MMM-YYYY"
+            ]
           },
           "columnDateFormat": {
             "type": "object",
             "description": "Specify this in case multiple date fields are being imported having different format each. Column name as key and date format as value.",
-            "examples": [{
-              "columnName1": "dd-MMM-YYYY",
-              "column2": "MM/dd/yyyy"
-            }]
+            "examples": [
+              {
+                "columnName1": "dd-MMM-YYYY",
+                "column2": "MM/dd/yyyy"
+              }
+            ]
           }
         },
         "required": [
           "columns"
         ],
-        "examples": [{
-          "columns": {
-            "columnName1": "value1",
-            "columnName2": "value2"
-          },
-          "criteria": "\"Sales Table\".\"Region\"='East'"
-        }]
+        "examples": [
+          {
+            "columns": {
+              "columnName1": "value1",
+              "columnName2": "value2"
+            },
+            "criteria": "\"Sales Table\".\"Region\"='East'"
+          }
+        ]
       },
       "Error": {
         "type": "object",
-  "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/schemas/Error"
-}
+        "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/schemas/Error"
+      }
     }
   }
 }
