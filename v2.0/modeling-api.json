@@ -3124,6 +3124,405 @@
           }
         }
       },
+      "/restapi/v2/workspaces/{workspace-id}/tags": {
+        "post": {
+          "tags": [
+            "Modeling APIs"
+          ],
+          "summary": "Create Tag",
+          "description": "Creates a new tag in the specified workspace.",
+          "operationId": "createTag",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/org-id"
+            },
+            {
+              "$ref": "#/components/parameters/workspace-id"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/x-www-form-urlencoded": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "CONFIG": {
+                      "$ref": "#/components/schemas/CreateTagConfig"
+                    }
+                  },
+                  "required": [
+                    "CONFIG"
+                  ]
+                },
+                "encoding": {
+                  "CONFIG": {
+                    "contentType": "application/json"
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "iam-oauth2-schema": [
+                "ZohoAnalytics.modeling.create"
+              ]
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Tag created successfully.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CreateTagResponse"
+                  },
+                  "examples": {
+                    "success": {
+                      "value": {
+                        "status": "success",
+                        "summary": "Create Tag",
+                        "data": {
+                          "tagId": "35130000011805005"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "default": {
+              "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+            }
+          }
+        }
+      },
+      "/restapi/v2/workspaces/{workspace-id}/tags/{tag-id}": {
+        "put": {
+          "tags": [
+            "Modeling APIs"
+          ],
+          "summary": "Update Tag",
+          "description": "Updates the specified tag.",
+          "operationId": "updateTag",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/org-id"
+            },
+            {
+              "$ref": "#/components/parameters/workspace-id"
+            },
+            {
+              "$ref": "#/components/parameters/tag-id"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/x-www-form-urlencoded": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "CONFIG": {
+                      "$ref": "#/components/schemas/UpdateTagConfig"
+                    }
+                  },
+                  "required": [
+                    "CONFIG"
+                  ]
+                },
+                "encoding": {
+                  "CONFIG": {
+                    "contentType": "application/json"
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "iam-oauth2-schema": [
+                "ZohoAnalytics.modeling.update"
+              ]
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "Tag updated successfully."
+            },
+            "default": {
+              "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "Modeling APIs"
+          ],
+          "summary": "Delete Tag",
+          "description": "Deletes the specified tag from the workspace.",
+          "operationId": "deleteTag",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/org-id"
+            },
+            {
+              "$ref": "#/components/parameters/workspace-id"
+            },
+            {
+              "$ref": "#/components/parameters/tag-id"
+            }
+          ],
+          "security": [
+            {
+              "iam-oauth2-schema": [
+                "ZohoAnalytics.modeling.delete"
+              ]
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "Tag deleted successfully."
+            },
+            "default": {
+              "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+            }
+          }
+        }
+      },
+      "/restapi/v2/workspaces/{workspace-id}/tags/{tag-id}/views": {
+        "post": {
+          "tags": [
+            "Modeling APIs"
+          ],
+          "summary": "Add Tag To Multiple Views",
+          "description": "Associates the specified tag with multiple views.",
+          "operationId": "addTagToViews",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/org-id"
+            },
+            {
+              "$ref": "#/components/parameters/workspace-id"
+            },
+            {
+              "$ref": "#/components/parameters/tag-id"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/x-www-form-urlencoded": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "CONFIG": {
+                      "$ref": "#/components/schemas/AddTagToViewsConfig"
+                    }
+                  },
+                  "required": [
+                    "CONFIG"
+                  ]
+                },
+                "encoding": {
+                  "CONFIG": {
+                    "contentType": "application/json"
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "iam-oauth2-schema": [
+                "ZohoAnalytics.modeling.create"
+              ]
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "Tag added to views successfully."
+            },
+            "default": {
+              "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "Modeling APIs"
+          ],
+          "summary": "Remove Tag From Multiple Views",
+          "description": "Removes the specified tag from multiple views. Use `dissociateAll` to remove the tag from all views.",
+          "operationId": "removeTagFromViews",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/org-id"
+            },
+            {
+              "$ref": "#/components/parameters/workspace-id"
+            },
+            {
+              "$ref": "#/components/parameters/tag-id"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/x-www-form-urlencoded": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "CONFIG": {
+                      "$ref": "#/components/schemas/RemoveTagFromViewsConfig"
+                    }
+                  },
+                  "required": [
+                    "CONFIG"
+                  ]
+                },
+                "encoding": {
+                  "CONFIG": {
+                    "contentType": "application/json"
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "iam-oauth2-schema": [
+                "ZohoAnalytics.modeling.delete"
+              ]
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "Tag removed from views successfully."
+            },
+            "default": {
+              "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+            }
+          }
+        }
+      },
+      "/restapi/v2/workspaces/{workspace-id}/views/{view-id}/tags": {
+        "post": {
+          "tags": [
+            "Modeling APIs"
+          ],
+          "summary": "Add Multiple Tags To View",
+          "description": "Associates multiple tags with the specified view.",
+          "operationId": "addTagsToView",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/org-id"
+            },
+            {
+              "$ref": "#/components/parameters/workspace-id"
+            },
+            {
+              "$ref": "#/components/parameters/view-id"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/x-www-form-urlencoded": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "CONFIG": {
+                      "$ref": "#/components/schemas/AddTagsToViewConfig"
+                    }
+                  },
+                  "required": [
+                    "CONFIG"
+                  ]
+                },
+                "encoding": {
+                  "CONFIG": {
+                    "contentType": "application/json"
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "iam-oauth2-schema": [
+                "ZohoAnalytics.modeling.create"
+              ]
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "Tags added to view successfully."
+            },
+            "default": {
+              "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "Modeling APIs"
+          ],
+          "summary": "Remove Multiple Tags From View",
+          "description": "Removes multiple tags from the specified view. Use `dissociateAll` to remove all tags from the view.",
+          "operationId": "removeTagsFromView",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/org-id"
+            },
+            {
+              "$ref": "#/components/parameters/workspace-id"
+            },
+            {
+              "$ref": "#/components/parameters/view-id"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/x-www-form-urlencoded": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "CONFIG": {
+                      "$ref": "#/components/schemas/RemoveTagsFromViewConfig"
+                    }
+                  },
+                  "required": [
+                    "CONFIG"
+                  ]
+                },
+                "encoding": {
+                  "CONFIG": {
+                    "contentType": "application/json"
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "iam-oauth2-schema": [
+                "ZohoAnalytics.modeling.delete"
+              ]
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "Tags removed from view successfully."
+            },
+            "default": {
+              "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+            }
+          }
+        }
+      },
       "/restapi/v2/automl/workspaces/{workspace-id}/analysis": {
         "post": {
           "tags": [
@@ -3553,6 +3952,15 @@
             "type": "string"
           },
           "description": "ID of the view."
+        },
+        "tag-id": {
+          "name": "tag-id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "ID of the tag."
         },
         "folder-id": {
           "name": "folder-id",
@@ -6644,6 +7052,194 @@
         "Error": {
           "type": "object",
           "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/schemas/Error"
+        },
+        "CreateTagConfig": {
+          "type": "object",
+          "description": "JSONObject with configuration for creating a tag.",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of the tag.",
+              "examples": [
+                "Sales"
+              ]
+            },
+            "colorCode": {
+              "type": "string",
+              "description": "Color code (hex) for the tag.",
+              "examples": [
+                "#1da043"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "colorCode"
+          ],
+          "examples": [
+            {
+              "name": "Sales",
+              "colorCode": "#1da043"
+            }
+          ]
+        },
+        "UpdateTagConfig": {
+          "type": "object",
+          "description": "JSONObject with configuration for updating an existing tag. Include only the fields to be updated.",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Updated name of the tag.",
+              "examples": [
+                "Sales"
+              ]
+            },
+            "colorCode": {
+              "type": "string",
+              "description": "Updated color code (hex) for the tag.",
+              "examples": [
+                "#55acee"
+              ]
+            }
+          },
+          "examples": [
+            {
+              "name": "Sales",
+              "colorCode": "#55acee"
+            }
+          ]
+        },
+        "CreateTagResponse": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "tagId": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "examples": [
+            {
+              "status": "success",
+              "summary": "Create Tag",
+              "data": {
+                "tagId": "35130000011805005"
+              }
+            }
+          ]
+        },
+        "AddTagToViewsConfig": {
+          "type": "object",
+          "description": "JSONObject with configuration for associating a tag with multiple views.",
+          "properties": {
+            "viewIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "maxItems": 1000,
+              "description": "List of view IDs to associate with the tag."
+            }
+          },
+          "required": [
+            "viewIds"
+          ],
+          "examples": [
+            {
+              "viewIds": [
+                "35130000011774007",
+                "35130000011774009"
+              ]
+            }
+          ]
+        },
+        "RemoveTagFromViewsConfig": {
+          "type": "object",
+          "description": "JSONObject with configuration for removing a tag from multiple views. Either provide `viewIds` or set `dissociateAll` to true.",
+          "properties": {
+            "viewIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "maxItems": 1000,
+              "description": "List of view IDs from which the tag should be removed."
+            },
+            "dissociateAll": {
+              "type": "boolean",
+              "description": "If true, removes the tag from all views in the workspace."
+            }
+          },
+          "examples": [
+            {
+              "viewIds": [
+                "35130000011774007"
+              ]
+            }
+          ]
+        },
+        "AddTagsToViewConfig": {
+          "type": "object",
+          "description": "JSONObject with configuration for associating multiple tags with a view.",
+          "properties": {
+            "tagIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "maxItems": 1000,
+              "description": "List of tag IDs to associate with the view."
+            }
+          },
+          "required": [
+            "tagIds"
+          ],
+          "examples": [
+            {
+              "tagIds": [
+                "35130000011774006",
+                "35130000011778018"
+              ]
+            }
+          ]
+        },
+        "RemoveTagsFromViewConfig": {
+          "type": "object",
+          "description": "JSONObject with configuration for removing multiple tags from a view. Either provide `tagIds` or set `dissociateAll` to true.",
+          "properties": {
+            "tagIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "maxItems": 1000,
+              "description": "List of tag IDs to remove from the view."
+            },
+            "dissociateAll": {
+              "type": "boolean",
+              "description": "If true, removes all tags from the view."
+            }
+          },
+          "examples": [
+            {
+              "tagIds": [
+                "35130000011774006"
+              ]
+            }
+          ]
         }
       }
     }

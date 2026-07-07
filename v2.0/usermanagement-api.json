@@ -633,6 +633,215 @@
             }
           }
         }
+      },
+      "/restapi/v2/orgs/roles": {
+        "get": {
+          "tags": [
+            "User Management APIs"
+          ],
+          "summary": "Get Custom Roles",
+          "description": "Returns list of custom roles for the specified organization.",
+          "operationId": "getCustomRoles",
+          "security": [
+            {
+              "iam-oauth2-schema": [
+                "ZohoAnalytics.usermanagement.read"
+              ]
+            }
+          ],
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/org-id"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/GetCustomRolesResponse"
+                  }
+                }
+              }
+            },
+            "default": {
+              "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+            }
+          }
+        },
+        "post": {
+          "tags": [
+            "User Management APIs"
+          ],
+          "summary": "Create Custom Role",
+          "description": "Creates a new custom role in the specified organization.",
+          "operationId": "createCustomRole",
+          "security": [
+            {
+              "iam-oauth2-schema": [
+                "ZohoAnalytics.usermanagement.create"
+              ]
+            }
+          ],
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/org-id"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/x-www-form-urlencoded": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "CONFIG": {
+                      "$ref": "#/components/schemas/CreateCustomRoleConfig"
+                    }
+                  },
+                  "required": [
+                    "CONFIG"
+                  ]
+                },
+                "encoding": {
+                  "CONFIG": {
+                    "contentType": "application/json"
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string"
+                      },
+                      "summary": {
+                        "type": "string"
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "roleId": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "examples": {
+                    "Default": {
+                      "value": {
+                        "status": "success",
+                        "summary": "Create role",
+                        "data": {
+                          "roleId": "3513000000001001"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "default": {
+              "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+            }
+          }
+        }
+      },
+      "/restapi/v2/orgs/roles/{role-id}": {
+        "put": {
+          "tags": [
+            "User Management APIs"
+          ],
+          "summary": "Update Custom Role",
+          "description": "Updates an existing custom role in the specified organization.",
+          "operationId": "updateCustomRole",
+          "security": [
+            {
+              "iam-oauth2-schema": [
+                "ZohoAnalytics.usermanagement.update"
+              ]
+            }
+          ],
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/org-id"
+            },
+            {
+              "$ref": "#/components/parameters/role-id"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/x-www-form-urlencoded": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "CONFIG": {
+                      "$ref": "#/components/schemas/UpdateCustomRoleConfig"
+                    }
+                  },
+                  "required": [
+                    "CONFIG"
+                  ]
+                },
+                "encoding": {
+                  "CONFIG": {
+                    "contentType": "application/json"
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "default": {
+              "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "User Management APIs"
+          ],
+          "summary": "Delete Custom Role",
+          "description": "Deletes the specified custom role from the organization.",
+          "operationId": "deleteCustomRole",
+          "security": [
+            {
+              "iam-oauth2-schema": [
+                "ZohoAnalytics.usermanagement.delete"
+              ]
+            }
+          ],
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/org-id"
+            },
+            {
+              "$ref": "#/components/parameters/role-id"
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "default": {
+              "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+            }
+          }
+        }
       }
     },
     "components": {
@@ -654,6 +863,15 @@
             "type": "string"
           },
           "description": "ID of the workspace."
+        },
+        "role-id": {
+          "name": "role-id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "ID of the custom role."
         }
       },
       "securitySchemes": {
@@ -1156,6 +1374,452 @@
               }
             }
           ]
+        },
+        "GetCustomRolesResponse": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "roles": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomRole"
+                  }
+                }
+              }
+            }
+          },
+          "examples": [
+            {
+              "status": "success",
+              "summary": "Get roles",
+              "data": {
+                "roles": [
+                  {
+                    "roleId": "35130000012041001",
+                    "roleName": "DashboardPowerUser",
+                    "accessType": "ALL_DASHBOARDS",
+                    "permissions": {
+                      "createPermissions": {
+                        "createTable": false,
+                        "createQueryTable": false,
+                        "createFolder": false,
+                        "createFormula": false
+                      },
+                      "dataPermissions": {
+                        "addRow": false,
+                        "modifyRow": false,
+                        "deleteRow": false,
+                        "importAppend": false,
+                        "importAddOrUpdate": false,
+                        "importDeleteAllAdd": false,
+                        "importDeleteUpdateAdd": false,
+                        "dataArchives": false
+                      },
+                      "designPermissions": {
+                        "designModify": false
+                      },
+                      "interactionPermissions": {
+                        "read": true,
+                        "insight": false,
+                        "vud": true,
+                        "drillDown": false,
+                        "drillThrough": false,
+                        "drillActions": false
+                      },
+                      "sharePermissions": {
+                        "share": true,
+                        "discussion": false,
+                        "privateLinks": false,
+                        "accessAdminPresets": false,
+                        "createPreset": false
+                      },
+                      "publishPermissions": {
+                        "export": true,
+                        "manageEmailSchedules": false,
+                        "allEmailSchedulesAccess": false,
+                        "manageDataAlerts": false,
+                        "allDataAlertsAccess": false,
+                        "createSlideshow": false,
+                        "publicViews": false
+                      }
+                    }
+                  },
+                  {
+                    "roleId": "35130000012042001",
+                    "roleName": "Analyst",
+                    "accessType": "ALL_REPORTS_AND_DASHBOARDS",
+                    "permissions": {
+                      "createPermissions": {
+                        "createTable": false,
+                        "createQueryTable": false,
+                        "createFolder": false,
+                        "createFormula": false
+                      },
+                      "dataPermissions": {
+                        "addRow": false,
+                        "modifyRow": false,
+                        "deleteRow": false,
+                        "importAppend": false,
+                        "importAddOrUpdate": false,
+                        "importDeleteAllAdd": false,
+                        "importDeleteUpdateAdd": false,
+                        "dataArchives": false
+                      },
+                      "designPermissions": {
+                        "designModify": false
+                      },
+                      "interactionPermissions": {
+                        "read": true,
+                        "insight": true,
+                        "vud": true,
+                        "drillDown": true,
+                        "drillThrough": true,
+                        "drillActions": true
+                      },
+                      "sharePermissions": {
+                        "share": false,
+                        "discussion": true,
+                        "privateLinks": false,
+                        "accessAdminPresets": false,
+                        "createPreset": false
+                      },
+                      "publishPermissions": {
+                        "export": false,
+                        "manageEmailSchedules": false,
+                        "allEmailSchedulesAccess": false,
+                        "manageDataAlerts": true,
+                        "allDataAlertsAccess": false,
+                        "createSlideshow": false,
+                        "publicViews": false
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "CustomRole": {
+          "type": "object",
+          "description": "Represents a custom role and its permissions.",
+          "properties": {
+            "roleId": {
+              "type": "string"
+            },
+            "roleName": {
+              "type": "string"
+            },
+            "accessType": {
+              "type": "string",
+              "enum": [
+                "ALL_DASHBOARDS",
+                "ALL_REPORTS_AND_DASHBOARDS",
+                "ALL_DATA_REPORTS_AND_DASHBOARDS"
+              ]
+            },
+            "permissions": {
+              "$ref": "#/components/schemas/CustomRolePermissionsResponse"
+            }
+          }
+        },
+        "CustomRolePermissionsResponse": {
+          "type": "object",
+          "description": "Permissions of the custom role grouped by category.",
+          "properties": {
+            "createPermissions": {
+              "$ref": "#/components/schemas/CustomRoleCreatePermissionsResponse"
+            },
+            "dataPermissions": {
+              "$ref": "#/components/schemas/CustomRoleDataPermissions"
+            },
+            "designPermissions": {
+              "$ref": "#/components/schemas/CustomRoleDesignPermissions"
+            },
+            "interactionPermissions": {
+              "$ref": "#/components/schemas/CustomRoleInteractionPermissions"
+            },
+            "sharePermissions": {
+              "$ref": "#/components/schemas/CustomRoleSharePermissions"
+            },
+            "publishPermissions": {
+              "$ref": "#/components/schemas/CustomRolePublishPermissions"
+            }
+          }
+        },
+        "CustomRoleCreatePermissionsResponse": {
+          "type": "object",
+          "description": "Create permissions returned for a custom role.",
+          "properties": {
+            "createTable": {
+              "type": "boolean"
+            },
+            "createQueryTable": {
+              "type": "boolean"
+            },
+            "createFolder": {
+              "type": "boolean"
+            },
+            "createFormula": {
+              "type": "boolean"
+            }
+          }
+        },
+        "CreateCustomRoleConfig": {
+          "type": "object",
+          "description": "JSONObject with configuration for creating a custom role.",
+          "properties": {
+            "roleName": {
+              "type": "string",
+              "description": "Name of the custom role.",
+              "examples": [
+                "Sales Analyst"
+              ]
+            },
+            "accessType": {
+              "type": "string",
+              "description": "Access type of the custom role.",
+              "enum": [
+                "ALL_DASHBOARDS",
+                "ALL_REPORTS_AND_DASHBOARDS",
+                "ALL_DATA_REPORTS_AND_DASHBOARDS"
+              ],
+              "examples": [
+                "ALL_REPORTS_AND_DASHBOARDS"
+              ]
+            },
+            "permissions": {
+              "$ref": "#/components/schemas/CustomRolePermissions"
+            }
+          },
+          "required": [
+            "roleName",
+            "accessType",
+            "permissions"
+          ],
+          "examples": [
+            {
+              "roleName": "Sales Analyst",
+              "accessType": "ALL_REPORTS_AND_DASHBOARDS",
+              "permissions": {
+                "createPermissions": {
+                  "createTable": true,
+                  "createQueryTable": true
+                },
+                "dataPermissions": {
+                  "addRow": true,
+                  "modifyRow": true
+                },
+                "interactionPermissions": {
+                  "read": true,
+                  "drillDown": true
+                }
+              }
+            }
+          ]
+        },
+        "UpdateCustomRoleConfig": {
+          "type": "object",
+          "description": "JSONObject with configuration for updating an existing custom role.",
+          "properties": {
+            "roleName": {
+              "type": "string",
+              "description": "Updated name of the custom role.",
+              "examples": [
+                "Sales Analyst"
+              ]
+            },
+            "accessType": {
+              "type": "string",
+              "description": "Updated access type of the custom role.",
+              "enum": [
+                "ALL_DASHBOARDS",
+                "ALL_REPORTS_AND_DASHBOARDS",
+                "ALL_DATA_REPORTS_AND_DASHBOARDS"
+              ],
+              "examples": [
+                "ALL_REPORTS_AND_DASHBOARDS"
+              ]
+            },
+            "permissions": {
+              "$ref": "#/components/schemas/CustomRolePermissions"
+            }
+          },
+          "required": [
+            "accessType",
+            "permissions"
+          ],
+          "examples": [
+            {
+              "accessType": "ALL_REPORTS_AND_DASHBOARDS",
+              "permissions": {
+                "dataPermissions": {
+                  "addRow": true,
+                  "modifyRow": false
+                }
+              }
+            }
+          ]
+        },
+        "CustomRolePermissions": {
+          "type": "object",
+          "description": "Permissions granted to the custom role, grouped by category.",
+          "properties": {
+            "createPermissions": {
+              "$ref": "#/components/schemas/CustomRoleCreatePermissions"
+            },
+            "dataPermissions": {
+              "$ref": "#/components/schemas/CustomRoleDataPermissions"
+            },
+            "designPermissions": {
+              "$ref": "#/components/schemas/CustomRoleDesignPermissions"
+            },
+            "interactionPermissions": {
+              "$ref": "#/components/schemas/CustomRoleInteractionPermissions"
+            },
+            "sharePermissions": {
+              "$ref": "#/components/schemas/CustomRoleSharePermissions"
+            },
+            "publishPermissions": {
+              "$ref": "#/components/schemas/CustomRolePublishPermissions"
+            }
+          }
+        },
+        "CustomRoleCreatePermissions": {
+          "type": "object",
+          "description": "Permissions related to creating resources.",
+          "properties": {
+            "createTable": {
+              "type": "boolean"
+            },
+            "createQueryTable": {
+              "type": "boolean"
+            },
+            "createFolder": {
+              "type": "boolean"
+            },
+            "createFormula": {
+              "type": "boolean"
+            }
+          }
+        },
+        "CustomRoleDataPermissions": {
+          "type": "object",
+          "description": "Permissions related to data operations.",
+          "properties": {
+            "addRow": {
+              "type": "boolean"
+            },
+            "modifyRow": {
+              "type": "boolean"
+            },
+            "deleteRow": {
+              "type": "boolean"
+            },
+            "importAppend": {
+              "type": "boolean"
+            },
+            "importAddOrUpdate": {
+              "type": "boolean"
+            },
+            "importDeleteAllAdd": {
+              "type": "boolean"
+            },
+            "importDeleteUpdateAdd": {
+              "type": "boolean"
+            },
+            "dataArchives": {
+              "type": "boolean"
+            }
+          }
+        },
+        "CustomRoleDesignPermissions": {
+          "type": "object",
+          "description": "Permissions related to design operations.",
+          "properties": {
+            "designModify": {
+              "type": "boolean"
+            }
+          }
+        },
+        "CustomRoleInteractionPermissions": {
+          "type": "object",
+          "description": "Permissions related to interaction operations.",
+          "properties": {
+            "read": {
+              "type": "boolean"
+            },
+            "vud": {
+              "type": "boolean"
+            },
+            "drillDown": {
+              "type": "boolean"
+            },
+            "drillThrough": {
+              "type": "boolean"
+            },
+            "drillActions": {
+              "type": "boolean"
+            },
+            "insight": {
+              "type": "boolean"
+            }
+          }
+        },
+        "CustomRoleSharePermissions": {
+          "type": "object",
+          "description": "Permissions related to sharing operations.",
+          "properties": {
+            "share": {
+              "type": "boolean"
+            },
+            "discussion": {
+              "type": "boolean"
+            },
+            "privateLinks": {
+              "type": "boolean"
+            },
+            "accessAdminPresets": {
+              "type": "boolean"
+            },
+            "createPreset": {
+              "type": "boolean"
+            }
+          }
+        },
+        "CustomRolePublishPermissions": {
+          "type": "object",
+          "description": "Permissions related to publishing operations.",
+          "properties": {
+            "export": {
+              "type": "boolean"
+            },
+            "manageEmailSchedules": {
+              "type": "boolean"
+            },
+            "allEmailSchedulesAccess": {
+              "type": "boolean"
+            },
+            "manageDataAlerts": {
+              "type": "boolean"
+            },
+            "allDataAlertsAccess": {
+              "type": "boolean"
+            },
+            "createSlideshow": {
+              "type": "boolean"
+            },
+            "publicViews": {
+              "type": "boolean"
+            }
+          }
         },
         "Error": {
           "type": "object",

@@ -535,6 +535,63 @@
           }
         }
       },
+      "/restapi/v2/workspaces/{workspace-id}/querytables": {
+        "get": {
+          "tags": [
+            "Metadata APIs"
+          ],
+          "security": [
+            {
+              "iam-oauth2-schema": [
+                "ZohoAnalytics.metadata.read"
+              ]
+            }
+          ],
+          "summary": "Get Query Tables",
+          "description": "Returns list of query tables in the specified workspace.",
+          "operationId": "getQueryTables",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/org-id"
+            },
+            {
+              "$ref": "#/components/parameters/workspace-id"
+            },
+            {
+              "name": "CONFIG",
+              "in": "query",
+              "required": false,
+              "description": "JSON object with optional keys for filtering, pagination and sorting. Needs to be stringified and URL-encoded.",
+              "schema": {
+                "$ref": "#/components/schemas/GetQueryTablesConfig"
+              },
+              "examples": {
+                "search": {
+                  "value": "{\"keyword\":\"Sales\"}"
+                },
+                "pagination": {
+                  "value": "{\"startIndex\":1,\"noOfResult\":50}"
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/GetQueryTablesResponse"
+                  }
+                }
+              }
+            },
+            "default": {
+              "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+            }
+          }
+        }
+      },
       "/restapi/v2/workspaces/{workspace-id}/querytables/{query-table-id}": {
         "get": {
           "tags": [
@@ -574,6 +631,146 @@
                 "application/json": {
                   "schema": {
                     "$ref": "#/components/schemas/GetQueryTableDetailsResponse"
+                  }
+                }
+              }
+            },
+            "default": {
+              "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+            }
+          }
+        }
+      },
+      "/restapi/v2/workspaces/{workspace-id}/tags": {
+        "get": {
+          "tags": [
+            "Metadata APIs"
+          ],
+          "security": [
+            {
+              "iam-oauth2-schema": [
+                "ZohoAnalytics.metadata.read"
+              ]
+            }
+          ],
+          "summary": "Get Tags List",
+          "description": "Returns list of tags in the specified workspace.",
+          "operationId": "getTagsList",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/org-id"
+            },
+            {
+              "$ref": "#/components/parameters/workspace-id"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/GetTagsListResponse"
+                  }
+                }
+              }
+            },
+            "default": {
+              "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+            }
+          }
+        }
+      },
+      "/restapi/v2/workspaces/{workspace-id}/tags/{tag-id}/views": {
+        "get": {
+          "tags": [
+            "Metadata APIs"
+          ],
+          "security": [
+            {
+              "iam-oauth2-schema": [
+                "ZohoAnalytics.metadata.read"
+              ]
+            }
+          ],
+          "summary": "Get Tagged Views",
+          "description": "Returns list of views associated with the specified tag.",
+          "operationId": "getTaggedViews",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/org-id"
+            },
+            {
+              "$ref": "#/components/parameters/workspace-id"
+            },
+            {
+              "$ref": "#/components/parameters/tag-id"
+            },
+            {
+              "name": "CONFIG",
+              "in": "query",
+              "required": false,
+              "description": "JSON object with optional 'limit' and 'offset' keys for pagination. Needs to be stringified and URL-encoded.",
+              "schema": {
+                "$ref": "#/components/schemas/LimitAndOffsetConfig"
+              },
+              "examples": {
+                "pagination": {
+                  "value": "{\"limit\":50,\"offset\":0}"
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/GetTaggedViewsResponse"
+                  }
+                }
+              }
+            },
+            "default": {
+              "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+            }
+          }
+        }
+      },
+      "/restapi/v2/workspaces/{workspace-id}/views/{view-id}/tags": {
+        "get": {
+          "tags": [
+            "Metadata APIs"
+          ],
+          "security": [
+            {
+              "iam-oauth2-schema": [
+                "ZohoAnalytics.metadata.read"
+              ]
+            }
+          ],
+          "summary": "Get View Tags",
+          "description": "Returns list of tags associated with the specified view.",
+          "operationId": "getViewTags",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/org-id"
+            },
+            {
+              "$ref": "#/components/parameters/workspace-id"
+            },
+            {
+              "$ref": "#/components/parameters/view-id"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/GetViewTagsResponse"
                   }
                 }
               }
@@ -1713,6 +1910,15 @@
             "type": "string"
           },
           "description": "ID of the view."
+        },
+        "tag-id": {
+          "name": "tag-id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "ID of the tag."
         },
         "column-id": {
           "name": "column-id",
@@ -4360,6 +4566,334 @@
         "Error": {
           "type": "object",
           "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/zoho-analytics-api-common.json#/components/schemas/Error"
+        },
+        "LimitAndOffsetConfig": {
+          "type": "object",
+          "description": "JSONObject with optional pagination parameters.",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "description": "Maximum number of results to return."
+            },
+            "offset": {
+              "type": "integer",
+              "description": "Number of results to skip."
+            }
+          },
+          "examples": [
+            {
+              "limit": 50,
+              "offset": 0
+            }
+          ]
+        },
+        "GetTagsListResponse": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tag"
+                  }
+                }
+              }
+            }
+          },
+          "examples": [
+            {
+              "status": "success",
+              "summary": "Get Tags",
+              "data": {
+                "tags": [
+                  {
+                    "id": "35130000011719001",
+                    "name": "Sales",
+                    "colorCode": "#1da043"
+                  },
+                  {
+                    "id": "35130000011719003",
+                    "name": "Employee",
+                    "colorCode": "#e72d35"
+                  },
+                  {
+                    "id": "35130000011719005",
+                    "name": "Recent",
+                    "colorCode": "#1da043"
+                  },
+                  {
+                    "id": "35130000011719006",
+                    "name": "Primary",
+                    "colorCode": "#55acee"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "GetTaggedViewsResponse": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "views": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "examples": [
+            {
+              "status": "success",
+              "summary": "Get tagged views",
+              "data": {
+                "views": [
+                  {
+                    "id": "35130000011592257",
+                    "name": "QT-4",
+                    "type": "QueryTable"
+                  },
+                  {
+                    "id": "35130000011774007",
+                    "name": "Sales Analysis",
+                    "type": "AnalysisView"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "GetViewTagsResponse": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tag"
+                  }
+                }
+              }
+            }
+          },
+          "examples": [
+            {
+              "status": "success",
+              "summary": "Get view tags",
+              "data": {
+                "tags": [
+                  {
+                    "id": "35130000011774006",
+                    "name": "S6",
+                    "colorCode": "#1da043"
+                  },
+                  {
+                    "id": "35130000011778018",
+                    "name": "S8",
+                    "colorCode": "#55acee"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "Tag": {
+          "type": "object",
+          "description": "Represents a tag.",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "colorCode": {
+              "type": "string"
+            }
+          }
+        },
+        "GetQueryTablesConfig": {
+          "type": "object",
+          "description": "JSONObject with optional configuration for filtering, pagination and sorting of query tables.",
+          "properties": {
+            "keyword": {
+              "type": "string",
+              "description": "Keyword to filter query tables by name."
+            },
+            "startIndex": {
+              "type": "integer",
+              "description": "Starting index of the result set (1-based)."
+            },
+            "noOfResult": {
+              "type": "integer",
+              "description": "Number of results to return."
+            },
+            "sortedColumn": {
+              "type": "integer",
+              "description": "Index of the column to sort by."
+            },
+            "sortedOrder": {
+              "type": "integer",
+              "description": "Sort order. 0 - ascending, 1 - descending."
+            },
+            "criteriaZuid": {
+              "type": "integer",
+              "format": "int64",
+              "description": "ZUID of the user to filter query tables by creator."
+            }
+          },
+          "examples": [
+            {
+              "keyword": "Sales",
+              "startIndex": 1,
+              "noOfResult": 50
+            }
+          ]
+        },
+        "GetQueryTablesResponse": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "queryTables": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "viewId": {
+                        "type": "string"
+                      },
+                      "viewName": {
+                        "type": "string"
+                      },
+                      "viewDesc": {
+                        "type": "string"
+                      },
+                      "viewType": {
+                        "type": "string"
+                      },
+                      "parentViewId": {
+                        "type": "string"
+                      },
+                      "folderId": {
+                        "type": "string"
+                      },
+                      "createdTime": {
+                        "type": "string"
+                      },
+                      "createdBy": {
+                        "type": "string"
+                      },
+                      "lastModifiedTime": {
+                        "type": "string"
+                      },
+                      "lastModifiedBy": {
+                        "type": "string"
+                      },
+                      "isFavorite": {
+                        "type": "boolean"
+                      },
+                      "sharedBy": {
+                        "type": "string"
+                      },
+                      "workspaceId": {
+                        "type": "string"
+                      },
+                      "orgId": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "examples": [
+            {
+              "status": "success",
+              "summary": "Get query tables",
+              "data": {
+                "queryTables": [
+                  {
+                    "viewId": "35130000012044012",
+                    "viewName": "Profit Analysis",
+                    "viewDesc": "",
+                    "viewType": "QueryTable",
+                    "parentViewId": "",
+                    "folderId": "35130000011997038",
+                    "createdTime": "1778682743279",
+                    "createdBy": "sathishkumar.ks@zohocorp.com",
+                    "lastModifiedTime": "1778682743437",
+                    "lastModifiedBy": "sathishkumar.ks@zohocorp.com",
+                    "isFavorite": false,
+                    "sharedBy": "",
+                    "workspaceId": "35130000011997036",
+                    "orgId": "55511666"
+                  },
+                  {
+                    "viewId": "35130000012044003",
+                    "viewName": "Sales Analysis",
+                    "viewDesc": "",
+                    "viewType": "QueryTable",
+                    "parentViewId": "",
+                    "folderId": "35130000011997038",
+                    "createdTime": "1778682690840",
+                    "createdBy": "sathishkumar.ks@zohocorp.com",
+                    "lastModifiedTime": "1778682691053",
+                    "lastModifiedBy": "sathishkumar.ks@zohocorp.com",
+                    "isFavorite": false,
+                    "sharedBy": "",
+                    "workspaceId": "35130000011997036",
+                    "orgId": "55511666"
+                  }
+                ]
+              }
+            }
+          ]
         }
       }
     }
