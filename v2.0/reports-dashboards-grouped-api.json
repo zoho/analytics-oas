@@ -110,7 +110,7 @@
                         {
                           "columnName": "Cost",
                           "tableName": "Sales",
-                          "operation": "average",
+                          "operation": "avg",
                           "filterType": "ranking",
                           "values": [
                             "Top 5"
@@ -140,7 +140,7 @@
                         {
                           "type": "row",
                           "columnName": "Date",
-                          "operation": "dateTime"
+                          "operation": "datetime"
                         },
                         {
                           "type": "column",
@@ -150,7 +150,7 @@
                         {
                           "type": "data",
                           "columnName": "Sales",
-                          "operation": "average",
+                          "operation": "avg",
                           "windowFunction": {
                             "type": "pctOfTotal"
                           }
@@ -158,12 +158,12 @@
                         {
                           "type": "data",
                           "columnName": "Cost",
-                          "operation": "stdDev"
+                          "operation": "std"
                         },
                         {
                           "type": "data",
                           "columnName": "Sales",
-                          "operation": "distinctCount",
+                          "operation": "dc",
                           "windowFunction": {
                             "type": "pctOfCol",
                             "baseField": "Product",
@@ -390,7 +390,7 @@
                           "type": "xAxis",
                           "columnName": "Date",
                           "tableName": "Sales",
-                          "operation": "monthYear"
+                          "operation": "monthyear"
                         },
                         {
                           "type": "yAxis",
@@ -615,13 +615,13 @@
                           "isAxisMerge": false,
                           "axisColumns": [
                             {
-                              "type": "xaxis",
+                              "type": "xAxis",
                               "columnName": "Product",
                               "tableName": "Sales",
                               "operation": "actual"
                             },
                             {
-                              "type": "yaxis",
+                              "type": "yAxis",
                               "columnName": "Sales",
                               "tableName": "Sales",
                               "operation": "sum"
@@ -647,22 +647,22 @@
                           "isAxisMerge": false,
                           "axisColumns": [
                             {
-                              "type": "xaxis",
+                              "type": "xAxis",
                               "columnName": "Product",
                               "tableName": "Sales",
                               "operation": "actual"
                             },
                             {
-                              "type": "yaxis",
+                              "type": "yAxis",
                               "columnName": "Sales",
                               "tableName": "Sales",
                               "operation": "sum"
                             },
                             {
-                              "type": "sizeaxis",
+                              "type": "sizeAxis",
                               "columnName": "Cost",
                               "tableName": "Sales",
-                              "operation": "average"
+                              "operation": "avg"
                             }
                           ]
                         }
@@ -685,19 +685,19 @@
                           "isAxisMerge": false,
                           "axisColumns": [
                             {
-                              "type": "xaxis",
+                              "type": "xAxis",
                               "columnName": "Date",
                               "tableName": "Sales",
                               "operation": "year"
                             },
                             {
-                              "type": "yaxis",
+                              "type": "yAxis",
                               "columnName": "Sales",
                               "tableName": "Sales",
                               "operation": "sum"
                             },
                             {
-                              "type": "coloraxis",
+                              "type": "colorAxis",
                               "columnName": "Product",
                               "tableName": "Sales",
                               "operation": "actual"
@@ -722,13 +722,13 @@
                           "isAxisMerge": false,
                           "axisColumns": [
                             {
-                              "type": "xaxis",
+                              "type": "xAxis",
                               "columnName": "Date",
                               "tableName": "Sales",
                               "operation": "year"
                             },
                             {
-                              "type": "yaxis",
+                              "type": "yAxis",
                               "columnName": "Sales",
                               "tableName": "Sales",
                               "operation": "sum"
@@ -767,19 +767,19 @@
                           "isAxisMerge": true,
                           "axisColumns": [
                             {
-                              "type": "xaxis",
+                              "type": "xAxis",
                               "columnName": "Date",
                               "tableName": "Sales",
                               "operation": "year"
                             },
                             {
-                              "type": "yaxis",
+                              "type": "yAxis",
                               "columnName": "Sales",
                               "tableName": "Sales",
                               "operation": "sum"
                             },
                             {
-                              "type": "yaxis",
+                              "type": "yAxis",
                               "columnName": "Cost",
                               "tableName": "Sales",
                               "operation": "sum"
@@ -805,13 +805,13 @@
                           "isAxisMerge": false,
                           "axisColumns": [
                             {
-                              "type": "xaxis",
+                              "type": "xAxis",
                               "columnName": "Product",
                               "tableName": "Sales",
                               "operation": "actual"
                             },
                             {
-                              "type": "yaxis",
+                              "type": "yAxis",
                               "columnName": "Sales",
                               "tableName": "Sales",
                               "operation": "sum"
@@ -855,19 +855,19 @@
                           "isAxisMerge": false,
                           "axisColumns": [
                             {
-                              "type": "xaxis",
+                              "type": "xAxis",
                               "columnName": "Product",
                               "tableName": "Sales",
                               "operation": "actual"
                             },
                             {
-                              "type": "yaxis",
+                              "type": "yAxis",
                               "columnName": "Date",
                               "tableName": "Sales",
                               "operation": "year"
                             },
                             {
-                              "type": "coloraxis",
+                              "type": "colorAxis",
                               "columnName": "Sales",
                               "tableName": "Sales",
                               "operation": "sum"
@@ -2225,7 +2225,7 @@
               "xAxis",
               "yAxis",
               "colorAxis",
-              "sizeaxis",
+              "sizeAxis",
               "textAxis",
               "tooltip",
               "row",
@@ -2239,7 +2239,7 @@
               "xAxis": "Horizontal axis",
               "yAxis": "Vertical axis",
               "colorAxis": "Color segments",
-              "sizeaxis": "Bubble size",
+              "sizeAxis": "Bubble size",
               "textAxis": "Text label",
               "tooltip": "Hover tooltip",
               "row": "Pivot row",
@@ -2296,12 +2296,12 @@
             "enum": [
               "actual",
               "sum",
-              "average",
+              "avg",
               "count",
-              "distinctCount",
+              "dc",
               "min",
               "max",
-              "stdDev",
+              "std",
               "variance",
               "percentile",
               "dimension",
@@ -2310,20 +2310,27 @@
               "year",
               "quarter",
               "month",
-              "monthYear",
+              "monthyear",
               "absQuarter",
-              "dateTime",
-              "seasonal"
+              "datetime",
+              "seasonal",
+              "quarteryear",
+              "week",
+              "weekyear",
+              "weekday",
+              "fulldate",
+              "day",
+              "hour"
             ],
             "x-enumDescriptions": {
               "actual": "Raw value",
               "sum": "Sum",
-              "average": "Average",
+              "avg": "Average",
               "count": "Row count",
-              "distinctCount": "Unique count",
+              "dc": "Unique count",
               "min": "Minimum",
               "max": "Maximum",
-              "stdDev": "Standard deviation",
+              "std": "Standard deviation",
               "variance": "Variance",
               "percentile": "Percentile",
               "dimension": "As dimension",
@@ -2332,10 +2339,17 @@
               "year": "By year",
               "quarter": "By quarter",
               "month": "By month",
-              "monthYear": "By month-year",
+              "monthyear": "By month-year",
               "absQuarter": "Absolute quarter",
-              "dateTime": "Full datetime",
-              "seasonal": "Seasonal period"
+              "datetime": "Full datetime",
+              "seasonal": "Seasonal period",
+              "quarteryear": "By quarter-year",
+              "week": "By week",
+              "weekyear": "By week-year",
+              "weekday": "By weekday",
+              "fulldate": "By full date",
+              "day": "By day",
+              "hour": "By hour"
             }
           },
           "geoRole": {
@@ -2620,12 +2634,12 @@
             "enum": [
               "actual",
               "sum",
-              "average",
+              "avg",
               "count",
-              "distinctCount",
+              "dc",
               "min",
               "max",
-              "stdDev",
+              "std",
               "variance",
               "percentile",
               "dimension",
@@ -2634,20 +2648,27 @@
               "year",
               "quarter",
               "month",
-              "monthYear",
+              "monthyear",
               "absQuarter",
-              "dateTime",
-              "seasonal"
+              "datetime",
+              "seasonal",
+              "quarteryear",
+              "week",
+              "weekyear",
+              "weekday",
+              "fulldate",
+              "day",
+              "hour"
             ],
             "x-enumDescriptions": {
               "actual": "Raw value",
               "sum": "Sum",
-              "average": "Average",
+              "avg": "Average",
               "count": "Row count",
-              "distinctCount": "Unique count",
+              "dc": "Unique count",
               "min": "Minimum",
               "max": "Maximum",
-              "stdDev": "Standard deviation",
+              "std": "Standard deviation",
               "variance": "Variance",
               "percentile": "Percentile",
               "dimension": "As dimension",
@@ -2656,10 +2677,17 @@
               "year": "By year",
               "quarter": "By quarter",
               "month": "By month",
-              "monthYear": "By month-year",
+              "monthyear": "By month-year",
               "absQuarter": "Absolute quarter",
-              "dateTime": "Full datetime",
-              "seasonal": "Seasonal period"
+              "datetime": "Full datetime",
+              "seasonal": "Seasonal period",
+              "quarteryear": "By quarter-year",
+              "week": "By week",
+              "weekyear": "By week-year",
+              "weekday": "By weekday",
+              "fulldate": "By full date",
+              "day": "By day",
+              "hour": "By hour"
             }
           },
           "percentileVal": {
@@ -2849,12 +2877,12 @@
             "enum": [
               "actual",
               "sum",
-              "average",
+              "avg",
               "count",
-              "distinctCount",
+              "dc",
               "min",
               "max",
-              "stdDev",
+              "std",
               "variance",
               "percentile",
               "dimension",
@@ -2863,20 +2891,27 @@
               "year",
               "quarter",
               "month",
-              "monthYear",
+              "monthyear",
               "absQuarter",
-              "dateTime",
-              "seasonal"
+              "datetime",
+              "seasonal",
+              "quarteryear",
+              "week",
+              "weekyear",
+              "weekday",
+              "fulldate",
+              "day",
+              "hour"
             ],
             "x-enumDescriptions": {
               "actual": "Raw value",
               "sum": "Sum",
-              "average": "Average",
+              "avg": "Average",
               "count": "Row count",
-              "distinctCount": "Unique count",
+              "dc": "Unique count",
               "min": "Minimum",
               "max": "Maximum",
-              "stdDev": "Standard deviation",
+              "std": "Standard deviation",
               "variance": "Variance",
               "percentile": "Percentile",
               "dimension": "As dimension",
@@ -2885,10 +2920,17 @@
               "year": "By year",
               "quarter": "By quarter",
               "month": "By month",
-              "monthYear": "By month-year",
+              "monthyear": "By month-year",
               "absQuarter": "Absolute quarter",
-              "dateTime": "Full datetime",
-              "seasonal": "Seasonal period"
+              "datetime": "Full datetime",
+              "seasonal": "Seasonal period",
+              "quarteryear": "By quarter-year",
+              "week": "By week",
+              "weekyear": "By week-year",
+              "weekday": "By weekday",
+              "fulldate": "By full date",
+              "day": "By day",
+              "hour": "By hour"
             }
           },
           "filterType": {
@@ -2951,7 +2993,7 @@
           {
             "columnName": "Cost",
             "tableName": "Sales",
-            "operation": "average",
+            "operation": "avg",
             "filterType": "ranking",
             "values": [
               "Top 5"
@@ -3119,12 +3161,12 @@
             "enum": [
               "actual",
               "sum",
-              "average",
+              "avg",
               "count",
-              "distinctCount",
+              "dc",
               "min",
               "max",
-              "stdDev",
+              "std",
               "variance",
               "percentile",
               "dimension",
@@ -3133,20 +3175,27 @@
               "year",
               "quarter",
               "month",
-              "monthYear",
+              "monthyear",
               "absQuarter",
-              "dateTime",
-              "seasonal"
+              "datetime",
+              "seasonal",
+              "quarteryear",
+              "week",
+              "weekyear",
+              "weekday",
+              "fulldate",
+              "day",
+              "hour"
             ],
             "x-enumDescriptions": {
               "actual": "Raw value",
               "sum": "Sum",
-              "average": "Average",
+              "avg": "Average",
               "count": "Row count",
-              "distinctCount": "Unique count",
+              "dc": "Unique count",
               "min": "Minimum",
               "max": "Maximum",
-              "stdDev": "Standard deviation",
+              "std": "Standard deviation",
               "variance": "Variance",
               "percentile": "Percentile",
               "dimension": "As dimension",
@@ -3155,10 +3204,17 @@
               "year": "By year",
               "quarter": "By quarter",
               "month": "By month",
-              "monthYear": "By month-year",
+              "monthyear": "By month-year",
               "absQuarter": "Absolute quarter",
-              "dateTime": "Full datetime",
-              "seasonal": "Seasonal period"
+              "datetime": "Full datetime",
+              "seasonal": "Seasonal period",
+              "quarteryear": "By quarter-year",
+              "week": "By week",
+              "weekyear": "By week-year",
+              "weekday": "By weekday",
+              "fulldate": "By full date",
+              "day": "By day",
+              "hour": "By hour"
             }
           },
           "compType": {
@@ -3657,7 +3713,9 @@
         },
         "required": [
           "baseTableName",
-          "reportType"
+          "title",
+          "reportType",
+          "axisColumns"
         ],
         "examples": [
           {
@@ -3690,7 +3748,7 @@
               {
                 "columnName": "Cost",
                 "tableName": "Sales",
-                "operation": "average",
+                "operation": "avg",
                 "filterType": "ranking",
                 "values": [
                   "Top 5"
@@ -3830,7 +3888,7 @@
                 "type": "xAxis",
                 "columnName": "Date",
                 "tableName": "Sales",
-                "operation": "monthYear"
+                "operation": "monthyear"
               },
               {
                 "type": "yAxis",
@@ -3947,13 +4005,13 @@
                 "isAxisMerge": false,
                 "axisColumns": [
                   {
-                    "type": "xaxis",
+                    "type": "xAxis",
                     "columnName": "Product",
                     "tableName": "Sales",
                     "operation": "actual"
                   },
                   {
-                    "type": "yaxis",
+                    "type": "yAxis",
                     "columnName": "Sales",
                     "tableName": "Sales",
                     "operation": "sum"
@@ -3984,13 +4042,13 @@
               "isAxisMerge": false,
               "axisColumns": [
                 {
-                  "type": "xaxis",
+                  "type": "xAxis",
                   "columnName": "Product",
                   "tableName": "Sales",
                   "operation": "actual"
                 },
                 {
-                  "type": "yaxis",
+                  "type": "yAxis",
                   "columnName": "Sales",
                   "tableName": "Sales",
                   "operation": "sum"
@@ -4078,13 +4136,13 @@
             "isAxisMerge": false,
             "axisColumns": [
               {
-                "type": "xaxis",
+                "type": "xAxis",
                 "columnName": "Product",
                 "tableName": "Sales",
                 "operation": "actual"
               },
               {
-                "type": "yaxis",
+                "type": "yAxis",
                 "columnName": "Sales",
                 "tableName": "Sales",
                 "operation": "sum"
@@ -4103,13 +4161,13 @@
         "examples": [
           [
             {
-              "type": "xaxis",
+              "type": "xAxis",
               "columnName": "Product",
               "tableName": "Sales",
               "operation": "actual"
             },
             {
-              "type": "yaxis",
+              "type": "yAxis",
               "columnName": "Sales",
               "tableName": "Sales",
               "operation": "sum"
@@ -4124,32 +4182,32 @@
         "properties": {
           "type": {
             "type": "string",
-            "description": "Axis role this column plays in the view, in the canonical lowercase form.",
+            "description": "Axis role this column plays in the view.",
             "enum": [
-              "xaxis",
-              "yaxis",
-              "coloraxis",
-              "sizeaxis",
-              "textaxis",
+              "xAxis",
+              "yAxis",
+              "colorAxis",
+              "sizeAxis",
+              "textAxis",
               "tooltip",
               "row",
               "column",
               "data",
-              "groupby",
+              "groupBy",
               "summarize",
               "custom"
             ],
             "x-enumDescriptions": {
-              "xaxis": "Horizontal axis",
-              "yaxis": "Vertical axis",
-              "coloraxis": "Color segments",
-              "sizeaxis": "Bubble size",
-              "textaxis": "Text label",
+              "xAxis": "Horizontal axis",
+              "yAxis": "Vertical axis",
+              "colorAxis": "Color segments",
+              "sizeAxis": "Bubble size",
+              "textAxis": "Text label",
               "tooltip": "Hover tooltip",
               "row": "Pivot row",
               "column": "Pivot column",
               "data": "Pivot measure",
-              "groupby": "Summary grouping",
+              "groupBy": "Summary grouping",
               "summarize": "Summary measure",
               "custom": "Custom axis"
             }
@@ -4181,12 +4239,12 @@
             "enum": [
               "actual",
               "sum",
-              "average",
+              "avg",
               "count",
-              "distinctCount",
+              "dc",
               "min",
               "max",
-              "stdDev",
+              "std",
               "variance",
               "percentile",
               "dimension",
@@ -4195,20 +4253,27 @@
               "year",
               "quarter",
               "month",
-              "monthYear",
+              "monthyear",
               "absQuarter",
-              "dateTime",
-              "seasonal"
+              "datetime",
+              "seasonal",
+              "quarteryear",
+              "week",
+              "weekyear",
+              "weekday",
+              "fulldate",
+              "day",
+              "hour"
             ],
             "x-enumDescriptions": {
               "actual": "Raw value",
               "sum": "Sum",
-              "average": "Average",
+              "avg": "Average",
               "count": "Row count",
-              "distinctCount": "Unique count",
+              "dc": "Unique count",
               "min": "Minimum",
               "max": "Maximum",
-              "stdDev": "Standard deviation",
+              "std": "Standard deviation",
               "variance": "Variance",
               "percentile": "Percentile",
               "dimension": "As dimension",
@@ -4217,10 +4282,17 @@
               "year": "By year",
               "quarter": "By quarter",
               "month": "By month",
-              "monthYear": "By month-year",
+              "monthyear": "By month-year",
               "absQuarter": "Absolute quarter",
-              "dateTime": "Full datetime",
-              "seasonal": "Seasonal period"
+              "datetime": "Full datetime",
+              "seasonal": "Seasonal period",
+              "quarteryear": "By quarter-year",
+              "week": "By week",
+              "weekyear": "By week-year",
+              "weekday": "By weekday",
+              "fulldate": "By full date",
+              "day": "By day",
+              "hour": "By hour"
             }
           },
           "geoRole": {
@@ -4246,7 +4318,7 @@
         },
         "examples": [
           {
-            "type": "xaxis",
+            "type": "xAxis",
             "columnName": "Product",
             "tableName": "Sales",
             "operation": "actual"
@@ -4700,6 +4772,7 @@
       },
       "DashboardLayout": {
         "type": "object",
+        "maxProperties": 100,
         "title": "DashboardLayout",
         "description": "JSONObject with the card index as key and the card definition as value. Keys are sequential index strings starting at \"1\". The map is a complete replacement of the dashboard layout - any card that is not present is removed.",
         "properties": {
@@ -4759,7 +4832,7 @@
           "width": {
             "type": "integer",
             "description": "Width of the card in grid units. Combined with `left`, it must not exceed 80.",
-            "minimum": 1,
+            "minimum": 2,
             "maximum": 80,
             "examples": [
               40
@@ -4768,7 +4841,7 @@
           "height": {
             "type": "integer",
             "description": "Height of the card in grid units. The minimum varies by card type - 3 for USERFILTERS and 5 for HTML.",
-            "minimum": 1,
+            "minimum": 2,
             "examples": [
               20
             ]
@@ -5645,7 +5718,7 @@
           "displayName": {
             "type": "string",
             "description": "Display name of the new dashboard. Must be unique within the workspace.",
-            "maxLength": 100,
+            "maxLength": 200,
             "examples": [
               "Sales Overview"
             ]
