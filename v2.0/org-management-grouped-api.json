@@ -3,28 +3,55 @@
   "info": {
     "title": "Zoho Analytics API",
     "version": "v2",
-    "description": "APIs that return information about the organisations, resource usage, subscription plan, and workspace or view identity lookups available to the authenticated user. These are read-only metadata APIs and do not modify any data."
+    "description": "APIs that return information about the resource usage, subscription plan, and workspace or view identity lookups available within an organisation, that list the workspaces, dashboards and recently opened views the calling user can reach in that organisation, and that read and update the organisation-wide and per-workspace access restriction settings."
   },
   "servers": [
     {
       "url": "https://analyticsapi.zoho.com"
     }
   ],
+  "x-api-unit-categories": {
+    "description": "Every call deducts API units from the organization's plan allowance and is counted against the per-minute request ceiling of its unit category. A unit cost with a row basis is charged pro rata as (rowsProcessed / rowsBasis) * units, without rounding up to a whole block. The per-minute ceilings below are the base configuration; an organization's effective ceiling is the base value scaled by a plan-specific multiplier.",
+    "categories": {
+      "DML": {
+        "frequencyLimitPerMinute": 100
+      },
+      "BULK": {
+        "frequencyLimitPerMinute": 40
+      },
+      "METADATA": {
+        "frequencyLimitPerMinute": 60
+      }
+    }
+  },
   "tags": [
     {
       "name": "Org Info & Settings",
       "description": "APIs for retrieving organisation information, resource usage, subscription details, and workspace or view metadata."
+    },
+    {
+      "name": "Org Level Listings",
+      "description": "APIs that list, for one organisation, the workspaces the calling user can reach, the dashboards across those workspaces, and the views the user opened most recently."
+    },
+    {
+      "name": "Security Controls",
+      "description": "APIs for reading and updating the access restriction settings of an organisation and of an individual workspace - sharing, private links, public views, export and email."
     }
   ],
   "paths": {
-    "/restapi/v2/orgs": {
+    "/restapi/v2/orgs/workspaces": {
       "get": {
         "tags": [
-          "Org Info & Settings"
+          "Org Level Listings"
         ],
-        "summary": "Get Organizations",
-        "description": "Returns the list of Zoho Analytics organisations that the authenticated user belongs to. For each organisation the response holds the role of the user within that organisation, the number of workspaces, and the plan details.\n\nThis is a user-scoped API. The `ZANALYTICS-ORGID` header is not required, and the result reflects the membership of the caller across all organisations rather than the contents of a single organisation.\n\n**Error codes**\n\n| Code | Meaning | Resolution |\n| --- | --- | --- |\n| 8535 | The OAuth token is invalid or has expired. | Provide a valid OAuth token generated with the ZohoAnalytics.metadata.read scope. |",
-        "operationId": "getOrganizations",
+        "summary": "Get Org Workspaces",
+        "description": "Returns the workspaces of one organisation that the calling user can reach. The organisation is chosen with the `ZANALYTICS-ORGID` header and everything else is worked out from the identity of the caller.\n\nAn Account Admin or an Organization Admin receives every active workspace of the organisation; every other user receives only the workspaces shared with them. The result is therefore per caller: the same URL and header return different lists for different tokens. The `workspaceId` values returned here are the input of the Get Org Dashboards API and of every workspace-scoped API.\n\n**Rate limit**\n\n- Costs 0.1 API units per request.\n- Unit category METADATA: up to 60 requests per minute across every METADATA-category call of the organization.\n\n**Notes**\n\n> Note:\n>\n> - The list is ordered with the newest workspace first, by creation time. There is no sort parameter and no paging - the whole list is returned in one response.\n> - **isDefault** belongs to the caller, not to the workspace. At most one entry is true, and none is when the caller has no default workspace or the default is in another organisation. Do not store it as a workspace attribute.\n> - **workspaceId**, **orgId** and **createdTime** are JSON strings. Keep them as strings and do not parse the IDs as 32-bit integers.\n> - Some builds return additional fields. Ignore unrecognised keys rather than validating against a closed schema.\n\n**Error codes**\n\n| Code | Meaning | Resolution |\n| --- | --- | --- |\n| 7301 | The caller is not an active user of the organisation named in the header. | Use the organisation the user belongs to, or ask an Account Admin to add the user to the organisation. |\n| 8083 | The ZANALYTICS-ORGID header is missing or empty. | Add the ZANALYTICS-ORGID header with your Organization ID. |\n| 8084 | No organisation exists with the given ID. | Read the Organization ID from Settings > Organisation in the Zoho Analytics UI. |\n| 8535 | Invalid or expired OAuth token. | Provide a valid token with scope ZohoAnalytics.metadata.read. |",
+        "operationId": "getOrgWorkspaces",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/org-id"
+          }
+        ],
         "security": [
           {
             "iam-oauth2-schema": [
@@ -34,112 +61,51 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful response",
+            "description": "OK. The workspaces of the organisation that the calling user can reach.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GetOrganizationsResponse"
+                  "$ref": "#/components/schemas/GetOrgWorkspacesResponse"
                 },
                 "examples": {
-                  "singleOrganisation": {
-                    "description": "The user is the Account Admin of exactly one organisation, which is therefore also the default organisation.",
-                    "summary": "Single organisation",
+                  "twoWorkspaces": {
+                    "description": "The caller can reach two workspaces of the organisation, one of which is their own default workspace.",
+                    "summary": "Two workspaces",
                     "value": {
                       "status": "success",
-                      "summary": "Get organizations",
+                      "summary": "Get org workspaces",
                       "data": {
-                        "orgs": [
+                        "workspaces": [
                           {
-                            "orgId": "64036181",
-                            "orgName": "acme-analytics",
-                            "orgDesc": "",
-                            "createdBy": "admin@acme.com",
-                            "createdByZuId": "64035928",
-                            "planName": "Enterprise",
-                            "isDefault": true,
-                            "numberOfWorkspaces": 41,
-                            "role": "Account Admin"
-                          }
-                        ]
-                      }
-                    }
-                  },
-                  "multipleOrganisations": {
-                    "description": "The user owns one organisation and holds the Organization Admin role in another. The role and workspace count differ per entry.",
-                    "summary": "Multiple organisations",
-                    "value": {
-                      "status": "success",
-                      "summary": "Get organizations",
-                      "data": {
-                        "orgs": [
-                          {
-                            "orgId": "64036201",
-                            "orgName": "dev-team-analytics",
-                            "orgDesc": "",
-                            "createdBy": "orgadmin@dev.com",
-                            "createdByZuId": "64036024",
-                            "planName": "Premium",
-                            "isDefault": false,
-                            "numberOfWorkspaces": 1,
-                            "role": "Account Admin"
+                            "workspaceId": "137687000271334001",
+                            "workspaceName": "Sales Analysis",
+                            "workspaceDesc": "Quarterly sales dashboards",
+                            "orgId": "700000123456",
+                            "createdTime": "1718361737000",
+                            "createdBy": "jane.doe@example.com",
+                            "isDefault": true
                           },
                           {
-                            "orgId": "64036181",
-                            "orgName": "acme-analytics",
-                            "orgDesc": "",
-                            "createdBy": "admin@acme.com",
-                            "createdByZuId": "64035928",
-                            "planName": "Enterprise",
-                            "isDefault": false,
-                            "numberOfWorkspaces": 41,
-                            "role": "Organization Admin"
+                            "workspaceId": "466206000000071000",
+                            "workspaceName": "Support Metrics",
+                            "workspaceDesc": "",
+                            "orgId": "700000123456",
+                            "createdTime": "1707286805000",
+                            "createdBy": "jane.doe@example.com",
+                            "isDefault": false
                           }
                         ]
                       }
                     }
                   },
-                  "sharedUserOrganisations": {
-                    "description": "The user owns one organisation and is a shared user in another, where numberOfWorkspaces reflects only the workspaces shared with them.",
-                    "summary": "Shared user",
+                  "nothingVisible": {
+                    "description": "Nothing is shared with the caller in this organisation, so an empty array is returned instead of an error.",
+                    "summary": "Nothing visible",
                     "value": {
                       "status": "success",
-                      "summary": "Get organizations",
+                      "summary": "Get org workspaces",
                       "data": {
-                        "orgs": [
-                          {
-                            "orgId": "64036287",
-                            "orgName": "shared-user-own-org",
-                            "orgDesc": "",
-                            "createdBy": "shareduser@test.com",
-                            "createdByZuId": "64036387",
-                            "planName": "Premium",
-                            "isDefault": false,
-                            "numberOfWorkspaces": 3,
-                            "role": "Account Admin"
-                          },
-                          {
-                            "orgId": "64036181",
-                            "orgName": "acme-analytics",
-                            "orgDesc": "",
-                            "createdBy": "admin@acme.com",
-                            "createdByZuId": "64035928",
-                            "planName": "Enterprise",
-                            "isDefault": false,
-                            "numberOfWorkspaces": 18,
-                            "role": "User"
-                          }
-                        ]
-                      }
-                    }
-                  },
-                  "noOrganisations": {
-                    "description": "The user holds no Zoho Analytics organisation membership. An empty orgs array is returned instead of an error.",
-                    "summary": "No organisations",
-                    "value": {
-                      "status": "success",
-                      "summary": "Get organizations",
-                      "data": {
-                        "orgs": []
+                        "workspaces": []
                       }
                     }
                   }
@@ -153,6 +119,261 @@
           "500": {
             "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/common/zoho-analytics-api-common.json#/components/responses/UnexpectedErrorResponse"
           }
+        },
+        "x-api-units": {
+          "apiId": 3043,
+          "action": "GET_WORKSPACES",
+          "category": "METADATA",
+          "units": 0.1,
+          "unitsBasis": "perRequest",
+          "unitsNote": "0.1 units per request",
+          "categoryFrequencyLimitPerMinute": 60
+        }
+      }
+    },
+    "/restapi/v2/orgs/dashboards": {
+      "get": {
+        "tags": [
+          "Org Level Listings"
+        ],
+        "summary": "Get Org Dashboards",
+        "description": "Returns the dashboards of one organisation that the calling user may read, across all of the workspaces the caller can see or across the workspaces named in `workspaceIds`. The result is paged and is ordered with the most recently modified dashboard first.\n\nVisibility follows the permissions of the caller: a dashboard is returned only when the caller administers its workspace, holds a custom role in it, or the dashboard has been shared with them or made public. Account Admins, Organization Admins and workspace admins see every dashboard in their workspaces. The API is not available on a Client Portal or White Label domain.\n\n**Rate limit**\n\n- Costs 0.1 API units per request.\n- Unit category METADATA: up to 60 requests per minute across every METADATA-category call of the organization.\n\n**Error codes**\n\n| Code | Meaning | Resolution |\n| --- | --- | --- |\n| 7301 | The caller is not a member of the organisation named in the header, or the request came through a Client Portal or White Label domain. | Call from the standard API host as a member of the organisation named in the header. |\n| 7387 | A workspaceIds entry does not belong to the organisation in the header, or does not exist. | Take the workspace IDs from the Get Org Workspaces API for the same organisation. |\n| 7430 | Org-level view listing is blocked for the organisation. This code is reported to the Account Admin. | Use the workspace-level APIs, or contact support. |\n| 7431 | Org-level view listing is blocked for the organisation. This code is reported to every caller other than the Account Admin. | Use the workspace-level APIs, or contact the account admin. |\n| 7476 | More workspaces are in scope than the limit allows. | Send workspaceIds listing the workspaces you want, within the limit. |\n| 8083 | The ZANALYTICS-ORGID header is missing or empty. | Add the ZANALYTICS-ORGID header with your Organization ID. |\n| 8084 | No organisation exists with the given ID. | Read the Organization ID from Settings > Organisation in the Zoho Analytics UI. |\n| 8507 | searchKey exceeds 100 characters, workspaceIds exceeds 10,000 characters, or CONFIG exceeds 11,000 characters. | Shorten the value, or send fewer workspace IDs per call. |\n| 8516 | pageNo or recordsPerPage is not a number. | Send a plain number. |\n| 8534 | CONFIG is not valid JSON, or workspaceIds is not an array. | Fix the JSON and URL encode it correctly, and send workspaceIds as an array of strings. |\n| 8535 | Invalid or expired OAuth token. | Provide a valid token with scope ZohoAnalytics.metadata.read. |\n| 8539 | CONFIG is sent empty, or a CONFIG value - searchKey, pageNo, recordsPerPage, workspaceIds or one of its entries - is null or an empty or blank string. | Leave the key out instead of sending an empty value, and send only non-empty workspace IDs. |\n| 8542 | CONFIG holds a key other than workspaceIds, pageNo, recordsPerPage and searchKey. | Remove the key. |\n| 8544 | pageNo is outside 1 to 1,000, or recordsPerPage is outside 1 to 500. | Use a value inside the range. |\n| 8547 | workspaceIds holds more than 1,000 entries. | Send at most 1,000 IDs, and in practice no more than the workspace limit allows. |",
+        "operationId": "getOrgDashboards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/org-id"
+          },
+          {
+            "name": "CONFIG",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": false,
+            "description": "JSONObject that selects the workspaces to scan, pages the result and filters it by dashboard name. As this is a GET request, the value must be stringified and URL encoded before it is sent.",
+            "schema": {
+              "$ref": "#/components/schemas/GetOrgDashboardsConfig"
+            },
+            "examples": {
+              "namedWorkspacesPaged": {
+                "description": "Lists the dashboards of two named workspaces, ten per page, returning the second page.",
+                "summary": "Named workspaces, paged",
+                "value": {
+                  "workspaceIds": [
+                    "137687000271334001",
+                    "466206000000071000"
+                  ],
+                  "pageNo": 2,
+                  "recordsPerPage": 10
+                }
+              },
+              "searchByName": {
+                "description": "Returns only the dashboards whose name contains Sales, across every workspace the caller can see.",
+                "summary": "Search by name",
+                "value": {
+                  "searchKey": "Sales"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "iam-oauth2-schema": [
+              "ZohoAnalytics.metadata.read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK. The dashboards of the organisation that the calling user may read, on the requested page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetOrgDashboardsResponse"
+                },
+                "examples": {
+                  "morePagesAvailable": {
+                    "description": "Two dashboards are returned and hasNextPage reports that the list continues on the next page.",
+                    "summary": "More pages available",
+                    "value": {
+                      "status": "success",
+                      "summary": "Get dashboards",
+                      "data": {
+                        "views": [
+                          {
+                            "viewId": "466206000000106002",
+                            "viewName": "Support Overview",
+                            "viewDesc": "Open tickets by priority",
+                            "viewType": "Dashboard",
+                            "parentViewId": "",
+                            "folderId": "466206000000071005",
+                            "createdTime": "1718361737000",
+                            "createdBy": "jane.doe@example.com",
+                            "lastModifiedTime": "1720000000000",
+                            "lastModifiedBy": "jane.doe@example.com",
+                            "isFavorite": true,
+                            "sharedBy": "jane.doe@example.com",
+                            "workspaceId": "466206000000071000",
+                            "orgId": "700000123456"
+                          },
+                          {
+                            "viewId": "466206000000106003",
+                            "viewName": "Support Backlog",
+                            "viewDesc": "",
+                            "viewType": "Dashboard",
+                            "parentViewId": "",
+                            "folderId": "null",
+                            "createdTime": "1707286805000",
+                            "createdBy": "jane.doe@example.com",
+                            "lastModifiedTime": "1719000000000",
+                            "lastModifiedBy": "john.roe@example.com",
+                            "isFavorite": false,
+                            "sharedBy": "jane.doe@example.com",
+                            "workspaceId": "466206000000071000",
+                            "orgId": "700000123456"
+                          }
+                        ],
+                        "pageDetails": {
+                          "pageNo": 1,
+                          "recordsPerPage": 2,
+                          "hasNextPage": true
+                        }
+                      }
+                    }
+                  },
+                  "nothingVisible": {
+                    "description": "No dashboard is readable by the caller, so an empty array is returned with the paging details of the request.",
+                    "summary": "Nothing visible",
+                    "value": {
+                      "status": "success",
+                      "summary": "Get dashboards",
+                      "data": {
+                        "views": [],
+                        "pageDetails": {
+                          "pageNo": 1,
+                          "recordsPerPage": 100,
+                          "hasNextPage": false
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/common/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+          },
+          "500": {
+            "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/common/zoho-analytics-api-common.json#/components/responses/UnexpectedErrorResponse"
+          }
+        },
+        "x-api-units": {
+          "apiId": 3044,
+          "action": "GET_ORG_DASHBOARDS",
+          "category": "METADATA",
+          "units": 0.1,
+          "unitsBasis": "perRequest",
+          "unitsNote": "0.1 units per request",
+          "categoryFrequencyLimitPerMinute": 60
+        }
+      }
+    },
+    "/restapi/v2/orgs/recentitems": {
+      "get": {
+        "tags": [
+          "Org Level Listings"
+        ],
+        "summary": "Get Org Recent Items",
+        "description": "Returns the views the calling user opened most recently in one organisation, of any view type, newest first. At most 20 items are returned.\n\nThe API reads the own history of the caller and keeps the entries whose workspace is visible to them. It applies no view-level check, so an entry can refer to a view the caller can no longer open; treat the `viewId` as a hint and handle a refusal when you open it.\n\n**Rate limit**\n\n- Costs 0.1 API units per request.\n- Unit category METADATA: up to 60 requests per minute across every METADATA-category call of the organization.\n\n**Notes**\n\n> Note:\n>\n> - Each user has an independent list. The request cannot read the recent items of another user.\n> - Entries are kept when their workspace is visible to the caller, exactly as the Get Org Workspaces API works it out. This API does not re-check view-level access, so an entry can refer to a view the caller can no longer open.\n> - At most 20 entries are returned, newest first. There is no paging, no limit attribute and no type filter.\n> - When the caller has no visible workspace in the organisation the list is empty; the existence of the organisation is still checked and an unknown ID fails with error 8084.\n> - The call costs 1 API unit, ten times the cost of the other org-level listings.\n> - The call is allowed on a Client Portal or White Label domain, where the entries are limited to the workspaces enabled for that domain.\n\n> Note:\n>\n> - Tables, reports, dashboards and the other view types appear together in one list.\n> - **viewName** and **workspaceName** are stored in the recent-items record and are not looked up live.\n> - **summary** reads Get recent views, the same text as the workspace-level recent-views listing. The endpoint is told apart by its URL rather than by **summary**.\n> - Some builds return additional fields. Ignore unrecognised keys rather than validating against a closed schema.\n\n**Error codes**\n\n| Code | Meaning | Resolution |\n| --- | --- | --- |\n| 7301 | The caller is not an active user of the organisation named in the header. | Use the organisation the user belongs to, or ask an Account Admin to add the user to the organisation. |\n| 8083 | The ZANALYTICS-ORGID header is missing or empty. | Add the ZANALYTICS-ORGID header with your Organization ID. |\n| 8084 | No organisation exists with the given ID. | Read the Organization ID from Settings > Organisation in the Zoho Analytics UI. |\n| 8535 | Invalid or expired OAuth token. | Provide a valid token with scope ZohoAnalytics.metadata.read. |",
+        "operationId": "getOrgRecentItems",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/org-id"
+          }
+        ],
+        "security": [
+          {
+            "iam-oauth2-schema": [
+              "ZohoAnalytics.metadata.read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK. The views the calling user opened most recently in the organisation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetOrgRecentItemsResponse"
+                },
+                "examples": {
+                  "threeRecentItems": {
+                    "description": "The caller opened a dashboard, a chart view and a table, returned newest first.",
+                    "summary": "Three recent items",
+                    "value": {
+                      "status": "success",
+                      "summary": "Get recent views",
+                      "data": {
+                        "views": [
+                          {
+                            "viewId": "466206000000106002",
+                            "viewName": "Support Overview",
+                            "viewType": "Dashboard",
+                            "workspaceId": "466206000000071000",
+                            "workspaceName": "Support Metrics",
+                            "viewLastAccessedTime": "1720100000000"
+                          },
+                          {
+                            "viewId": "137687000006991601",
+                            "viewName": "Revenue by Region",
+                            "viewType": "AnalysisView",
+                            "workspaceId": "137687000271334001",
+                            "workspaceName": "Sales Analysis",
+                            "viewLastAccessedTime": "1720090000000"
+                          },
+                          {
+                            "viewId": "466206000000105001",
+                            "viewName": "Tickets",
+                            "viewType": "Table",
+                            "workspaceId": "466206000000071000",
+                            "workspaceName": "Support Metrics",
+                            "viewLastAccessedTime": "1720000000000"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "noRecentItems": {
+                    "description": "The caller has no history in a workspace that is visible to them in this organisation.",
+                    "summary": "No recent items",
+                    "value": {
+                      "status": "success",
+                      "summary": "Get recent views",
+                      "data": {
+                        "views": []
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/common/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+          },
+          "500": {
+            "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/common/zoho-analytics-api-common.json#/components/responses/UnexpectedErrorResponse"
+          }
+        },
+        "x-api-units": {
+          "apiId": 3007,
+          "action": "GET_RECENT_VIEWS",
+          "category": "METADATA",
+          "units": 0.1,
+          "unitsBasis": "perRequest",
+          "unitsNote": "0.1 units per request",
+          "categoryFrequencyLimitPerMinute": 60
         }
       }
     },
@@ -162,7 +383,7 @@
           "Org Info & Settings"
         ],
         "summary": "Get Resource Details",
-        "description": "Returns the current resource allocation and usage statistics of the specified organisation. The response covers plan-governed metrics such as user seats, row limits, API units, and scheduled imports, and is useful for monitoring consumption against the plan limits.\n\nThe authenticated user must be an Account Admin or an Organization Admin of the organisation sent in the `ZANALYTICS-ORGID` header.\n\n**Notes**\n\n> Note:\n>\n> - This API is restricted to Account Admins and Organization Admins. A Workspace Admin or a regular user receives error code 7301.\n> - `allocated` returns `Unlimited` when the plan places no cap on the resource. `remaining` is then also returned as `Unlimited`.\n> - `used` returns `null` when usage tracking for the resource is asynchronous or not yet computed, as happens with `archivedrows`. `remaining` is then calculated from `allocated` assuming zero usage.\n> - API unit consumption is tracked at sub-unit precision, so the `used` and `remaining` values of `apiUnits` can hold decimal values.\n\n**Error codes**\n\n| Code | Meaning | Resolution |\n| --- | --- | --- |\n| 7103 | Organisation not found. | Verify the ZANALYTICS-ORGID header value. The organisation ID can be obtained using the Get Organizations API. |\n| 7301 | The user is not an Account Admin or an Organization Admin of the specified organisation. | Only Account Admins and Organization Admins can view the resource details. |\n| 8535 | The OAuth token is invalid or has expired. | Provide a valid OAuth token generated with the ZohoAnalytics.usermanagement.read scope. |",
+        "description": "Returns the current resource allocation and usage statistics for the specified organisation. This includes metrics such as user seats, row limits, API units, scheduled imports, and other plan-governed resources. Useful for monitoring usage against plan limits.\n\nThe authenticated user must be an Account Admin or an Organization Admin of the organisation sent in the `ZANALYTICS-ORGID` header.\n\n**Rate limit**\n\n- Costs 0.1 API units per request.\n- Unit category METADATA: up to 60 requests per minute across every METADATA-category call of the organization.\n\n**Notes**\n\n> Note:\n>\n> - This API is restricted to Account Admins and Organization Admins. A Workspace Admin or a regular user receives error code 7301.\n> - `allocated` returns `Unlimited` when the plan places no cap on the resource. `remaining` is then also returned as `Unlimited`.\n> - `used` returns `null` when usage tracking for the resource is asynchronous or not yet computed, as happens with `archivedrows`. `remaining` is then calculated from `allocated` assuming zero usage.\n> - API unit consumption is tracked at sub-unit precision, so the `used` and `remaining` values of `apiUnits` can hold decimal values.\n\n**Error codes**\n\n| Code | Meaning | Resolution |\n| --- | --- | --- |\n| 7103 | Organisation not found. | Verify the ZANALYTICS-ORGID header value. |\n| 7301 | User is not an Account Admin or Organization Admin of the specified organisation. | Only Account Admins and Organization Admins can view resource details. |\n| 8535 | Invalid or expired OAuth token. | Provide a valid token with scope ZohoAnalytics.usermanagement.read. |",
         "operationId": "getResourceDetails",
         "security": [
           {
@@ -333,6 +554,15 @@
           "500": {
             "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/common/zoho-analytics-api-common.json#/components/responses/UnexpectedErrorResponse"
           }
+        },
+        "x-api-units": {
+          "apiId": 6008,
+          "action": "GET_RESOURCE_DETAILS",
+          "category": "METADATA",
+          "units": 0.1,
+          "unitsBasis": "perRequest",
+          "unitsNote": "0.1 units per request",
+          "categoryFrequencyLimitPerMinute": 60
         }
       }
     },
@@ -342,7 +572,7 @@
           "Org Info & Settings"
         ],
         "summary": "Get Subscription Details",
-        "description": "Returns the current subscription plan, the add-on details, the billing date, and the trial status of the specified organisation.\n\nThe authenticated user must be an Account Admin or an Organization Admin of the organisation sent in the `ZANALYTICS-ORGID` header.\n\n**Error codes**\n\n| Code | Meaning | Resolution |\n| --- | --- | --- |\n| 7103 | Organisation not found. | Verify the ZANALYTICS-ORGID header value. The organisation ID can be obtained using the Get Organizations API. |\n| 7301 | The user is not an Account Admin or an Organization Admin of the specified organisation. | Only Account Admins and Organization Admins can view the subscription details. |\n| 8535 | The OAuth token is invalid or has expired. | Provide a valid OAuth token generated with the ZohoAnalytics.usermanagement.read scope. |",
+        "description": "Returns the current subscription plan, add-on details, billing date, and trial status for the specified organisation.\n\nThe authenticated user must be an Account Admin or an Organization Admin of the organisation sent in the `ZANALYTICS-ORGID` header.\n\n**Rate limit**\n\n- Costs 0.1 API units per request.\n- Unit category METADATA: up to 60 requests per minute across every METADATA-category call of the organization.\n\n**Error codes**\n\n| Code | Meaning | Resolution |\n| --- | --- | --- |\n| 7103 | Organisation not found. | Verify the ZANALYTICS-ORGID header value. |\n| 7301 | User is not an Account Admin or Organization Admin of the specified organisation. | Only Account Admins and Organization Admins can view subscription details. |\n| 8535 | Invalid or expired OAuth token. | Provide a valid token with scope ZohoAnalytics.usermanagement.read. |",
         "operationId": "getSubscriptionDetails",
         "security": [
           {
@@ -424,6 +654,15 @@
           "500": {
             "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/common/zoho-analytics-api-common.json#/components/responses/UnexpectedErrorResponse"
           }
+        },
+        "x-api-units": {
+          "apiId": 6006,
+          "action": "GET_SUBSCRIPTION_DETAILS",
+          "category": "METADATA",
+          "units": 0.1,
+          "unitsBasis": "perRequest",
+          "unitsNote": "0.1 units per request",
+          "categoryFrequencyLimitPerMinute": 60
         }
       }
     },
@@ -433,7 +672,7 @@
           "Org Info & Settings"
         ],
         "summary": "Get Meta Details From Name",
-        "description": "Resolves a workspace, and optionally a view within it, by name and returns the corresponding IDs. Use this API when the human-readable names of a workspace and a view are known but their IDs are needed to call other workspace-scoped or view-scoped APIs.\n\n- When only `workspaceName` is sent, the response holds the workspace ID, the workspace description, and the organisation ID.\n- When both `workspaceName` and `viewName` are sent, the response additionally holds the ID, description, and type of the view.\n\n**Notes**\n\n> Note:\n>\n> - Workspace names are unique within an organisation and view names are unique within a workspace. The match is exact and case sensitive, so `Sales Analytics` and `sales analytics` are treated as different names.\n> - The lookup is scoped to the organisation sent in the `ZANALYTICS-ORGID` header. A workspace of the same name in a different organisation is not found, and the request fails with error code 7104.\n> - When `viewName` is sent and the view does not exist in the workspace, the request fails with error code 7104. Workspace metadata is not returned in failure responses.\n> - When `viewName` is sent, permission is checked against the view. If the view is not accessible to the user, the request fails with error code 7301 even when the user can see the workspace.\n> - A workspace-only lookup succeeds only when at least one view in the workspace is shared with the user. If the workspace holds views but none are shared with the user, the request fails with error code 7301.\n> - This API is the recommended way to bootstrap name-based integrations. Resolve `workspaceId` and `viewId` here and pass them to downstream APIs, instead of hard-coding numeric IDs that can change across environments.\n\n**Error codes**\n\n| Code | Meaning | Resolution |\n| --- | --- | --- |\n| 7103 | Organisation not found. | Verify the ZANALYTICS-ORGID header value. The organisation ID can be obtained using the Get Organizations API. |\n| 7104 | Workspace or view not found for the provided name. | Verify the exact spelling and case of workspaceName and viewName. The names are case sensitive. |\n| 7301 | The user does not have Read access on the workspace or the view. | Ensure the workspace or the view is shared with the user, or that the user holds the Workspace Admin, Account Admin, or Organization Admin role. |\n| 8535 | The OAuth token is invalid or has expired. | Provide a valid OAuth token generated with the ZohoAnalytics.metadata.read scope. |",
+        "description": "Resolves a workspace (and optionally a view) by name to return its numeric IDs. This is useful when you know the human-readable names of a workspace and view but need their IDs to call other workspace-scoped or view-scoped APIs.\n\n- When only `workspaceName` is sent, the response holds the workspace ID, the workspace description, and the organisation ID.\n- When both `workspaceName` and `viewName` are sent, the response additionally holds the ID, description, and type of the view.\n\n**Rate limit**\n\n- Costs 0.1 API units per request.\n- Unit category METADATA: up to 60 requests per minute across every METADATA-category call of the organization.\n\n**Notes**\n\n> Note:\n>\n> - Workspace names are unique within an organisation and view names are unique within a workspace. The match is exact and case sensitive, so `Sales Analytics` and `sales analytics` are treated as different names.\n> - The lookup is scoped to the organisation sent in the `ZANALYTICS-ORGID` header. A workspace of the same name in a different organisation is not found, and the request fails with error code 7104.\n> - When `viewName` is sent and the view does not exist in the workspace, the request fails with error code 7104. Workspace metadata is not returned in failure responses.\n> - When `viewName` is sent, permission is checked against the view. If the view is not accessible to the user, the request fails with error code 7301 even when the user can see the workspace.\n> - A workspace-only lookup succeeds only when at least one view in the workspace is shared with the user. If the workspace holds views but none are shared with the user, the request fails with error code 7301.\n> - This API is the recommended way to bootstrap name-based integrations. Resolve `workspaceId` and `viewId` here and pass them to downstream APIs, instead of hard-coding numeric IDs that can change across environments.\n\n**Error codes**\n\n| Code | Meaning | Resolution |\n| --- | --- | --- |\n| 7103 | Organisation not found. | Verify the ZANALYTICS-ORGID header value. |\n| 7104 | Workspace or view not found by the provided name. | Verify the exact spelling and case of workspaceName and viewName. Names are case-sensitive. |\n| 7301 | User does not have Read access on the workspace or view. | Ensure the workspace or view is shared with the user, or the user has Workspace Admin / Account Admin / Organization Admin role. |\n| 8535 | Invalid or expired OAuth token. | Provide a valid token with scope ZohoAnalytics.metadata.read. |",
         "operationId": "getMetaDetails",
         "security": [
           {
@@ -532,6 +771,489 @@
           "500": {
             "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/common/zoho-analytics-api-common.json#/components/responses/UnexpectedErrorResponse"
           }
+        },
+        "x-api-units": {
+          "apiId": 3021,
+          "action": "GET_META_DETAILS",
+          "category": "METADATA",
+          "units": 0.1,
+          "unitsBasis": "perRequest",
+          "unitsNote": "0.1 units per request",
+          "categoryFrequencyLimitPerMinute": 60
+        }
+      }
+    },
+    "/restapi/v2/security-controls/access-restrictions": {
+      "get": {
+        "operationId": "getOrgAccessRestrictions",
+        "summary": "Get Org Access Restrictions",
+        "description": "Returns the organisation's access restriction settings: the master switch and the five sections. Feeds Update Org Access Restrictions and supplies the values to copy when overriding a workspace.\n\n**Rate limit**\n\n- Costs 1 API unit per request.\n- Unit category METADATA: up to 60 requests per minute across every METADATA-category call of the organization.\n\n**Error codes**\n\n| Code | Meaning | Resolution |\n| --- | --- | --- |\n| 7301 | SECURITY_NOT_PERMITTED - The caller is not an Account Admin or Organization Admin, or the request came through a Client Portal / White Label domain. | Call from the standard API host as an Account Admin or Organization Admin of the organisation. |\n| 8083 | ORGID_NOT_PRESENT_IN_THE_HEADER - The ZANALYTICS-ORGID header is missing or empty. | Add the ZANALYTICS-ORGID header with your Organization ID. |\n| 8084 | ORGID_NOT_EXIST - No organisation exists with the given ID. | Use the orgId returned by the organisation listing API. |\n| 8535 | INVALID_OAUTHTOKEN - Invalid or expired OAuth token. | Provide a valid token with scope ZohoAnalytics.metadata.read. |",
+        "tags": [
+          "Security Controls"
+        ],
+        "security": [
+          {
+            "iam-oauth2-schema": [
+              "ZohoAnalytics.metadata.read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/org-id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully completed the get org access restrictions request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetOrgAccessRestrictionsResponse"
+                },
+                "examples": {
+                  "okRestrictionsEnabled": {
+                    "description": "OK — Restrictions enabled, private links disabled, domain restrictions on sharing and email.",
+                    "summary": "OK Restrictions enabled private",
+                    "value": {
+                      "status": "success",
+                      "summary": "Get org access restrictions",
+                      "data": {
+                        "accessRestrictionEnabled": true,
+                        "shareViews": {
+                          "domainRestrictionEnabled": true,
+                          "trustedDomains": [
+                            "example.com",
+                            "partner.example.org"
+                          ]
+                        },
+                        "privateLinks": {
+                          "enabled": false,
+                          "domainRestrictionEnabled": false,
+                          "trustedDomains": []
+                        },
+                        "publicViews": {
+                          "enabled": true,
+                          "domainRestrictionEnabled": false,
+                          "trustedDomains": []
+                        },
+                        "exportViews": {
+                          "enabled": true
+                        },
+                        "emailViews": {
+                          "enabled": true,
+                          "domainRestrictionEnabled": true,
+                          "trustedDomains": [
+                            "example.com"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "okOrganisationThat": {
+                    "description": "OK — Organisation that has never configured access restrictions.",
+                    "summary": "OK Organisation that has",
+                    "value": {
+                      "status": "success",
+                      "summary": "Get org access restrictions",
+                      "data": {
+                        "accessRestrictionEnabled": false,
+                        "shareViews": {
+                          "domainRestrictionEnabled": false,
+                          "trustedDomains": []
+                        },
+                        "privateLinks": {
+                          "enabled": true,
+                          "domainRestrictionEnabled": false,
+                          "trustedDomains": []
+                        },
+                        "publicViews": {
+                          "enabled": true,
+                          "domainRestrictionEnabled": false,
+                          "trustedDomains": []
+                        },
+                        "exportViews": {
+                          "enabled": true
+                        },
+                        "emailViews": {
+                          "enabled": true,
+                          "domainRestrictionEnabled": false,
+                          "trustedDomains": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/common/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+          },
+          "500": {
+            "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/common/zoho-analytics-api-common.json#/components/responses/UnexpectedErrorResponse"
+          }
+        },
+        "x-api-units": {
+          "apiId": 3067,
+          "action": "GET_ORG_ACCESS_RESTRICTIONS",
+          "category": "METADATA",
+          "units": 1,
+          "unitsBasis": "perRequest",
+          "unitsNote": "1 unit per request",
+          "categoryFrequencyLimitPerMinute": 60
+        }
+      },
+      "put": {
+        "operationId": "updateOrgAccessRestrictions",
+        "summary": "Update Org Access Restrictions",
+        "description": "Switches the organisation's access restrictions on or off and updates any of the five sections. Returns no body. Read the current state first with Get Org Access Restrictions.\n\n**Rate limit**\n\n- Costs 1 API unit per request.\n- Unit category METADATA: up to 60 requests per minute across every METADATA-category call of the organization.\n\n**Error codes**\n\n| Code | Meaning | Resolution |\n| --- | --- | --- |\n| 7301 | SECURITY_NOT_PERMITTED - The caller is not an Account Admin or Organization Admin, or the request came through a Client Portal / White Label domain. | Call from the standard API host as an Account Admin or Organization Admin of the organisation. |\n| 8077 | EMPTY_JSON_CONFIGURATION - CONFIG is present but empty. | Send a JSON object in CONFIG. |\n| 8080 | INVALID_JSON_CONFIGURATION - CONFIG is not valid JSON, or it contains neither accessRestrictionEnabled nor a non-empty section. | Send valid JSON with at least one attribute to change. |\n| 8083 | ORGID_NOT_PRESENT_IN_THE_HEADER - The ZANALYTICS-ORGID header is missing or empty. | Add the ZANALYTICS-ORGID header with your Organization ID. |\n| 8084 | ORGID_NOT_EXIST - No organisation exists with the given ID. | Use the orgId returned by the organisation listing API. |\n| 8192 | TRUSTED_DOMAINS_WITHOUT_DOMAIN_RESTRICTION - trustedDomains was sent for a section whose domain restriction is off or is being switched off. | Send domainRestrictionEnabled: true with the list, or send domainRestrictionEnabled: false with trustedDomains: [] to clear it. |\n| 8193 | TRUSTED_DOMAINS_EMPTY - The domain restriction is on, or being switched on, but the section has no trusted domains. | Send at least one domain in trustedDomains, or switch the restriction off. |\n| 8194 | DOMAIN_RESTRICTION_NOT_ALLOWED_WHEN_DISABLED - Domain attributes were sent for privateLinks, publicViews or emailViews while that feature is disabled or is being disabled. | Enable the feature in the same request, or remove the domain attributes. |\n| 8195 | EMAIL_NOT_ALLOWED_WHEN_EXPORT_DISABLED - emailViews was sent while export is disabled or is being disabled, and email views would stay enabled. | Enable export in the same request, or send emailViews: {\"enabled\": false} when disabling export. |\n| 8196 | ACCESS_RESTRICTION_DISABLED - Access restriction is off for the organisation and the request carries sections without turning it on, including accessRestrictionEnabled: false sent with sections while it is already off. | Include accessRestrictionEnabled: true in the same request. |\n| 8200 | SECTIONS_NOT_ALLOWED_WHEN_DISABLING_ACCESS_RESTRICTION - accessRestrictionEnabled: false was sent together with a non-empty section. | Send accessRestrictionEnabled: false on its own. |\n| 8535 | INVALID_OAUTHTOKEN - Invalid or expired OAuth token. | Provide a valid token with scope ZohoAnalytics.metadata.update. |",
+        "tags": [
+          "Security Controls"
+        ],
+        "security": [
+          {
+            "iam-oauth2-schema": [
+              "ZohoAnalytics.metadata.update"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/org-id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "CONFIG"
+                ],
+                "properties": {
+                  "CONFIG": {
+                    "$ref": "#/components/schemas/UpdateOrgAccessRestrictionsConfig"
+                  }
+                }
+              },
+              "encoding": {
+                "CONFIG": {
+                  "contentType": "application/json"
+                }
+              },
+              "examples": {
+                "switchAccessRestrictions": {
+                  "description": "Switch access restrictions on, change nothing else.",
+                  "summary": "Switch access restrictions on",
+                  "value": {
+                    "CONFIG": {
+                      "accessRestrictionEnabled": true
+                    }
+                  }
+                },
+                "configureSeveralSections": {
+                  "description": "Configure several sections at once.",
+                  "summary": "Configure several sections at",
+                  "value": {
+                    "CONFIG": {
+                      "shareViews": {
+                        "domainRestrictionEnabled": true,
+                        "trustedDomains": [
+                          "example.com",
+                          "partner.example.org"
+                        ]
+                      },
+                      "privateLinks": {
+                        "enabled": false
+                      },
+                      "exportViews": {
+                        "enabled": true
+                      },
+                      "emailViews": {
+                        "enabled": true,
+                        "domainRestrictionEnabled": true,
+                        "trustedDomains": [
+                          "example.com"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successfully completed. No response body is returned."
+          },
+          "4XX": {
+            "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/common/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+          },
+          "500": {
+            "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/common/zoho-analytics-api-common.json#/components/responses/UnexpectedErrorResponse"
+          }
+        },
+        "x-api-units": {
+          "apiId": 3068,
+          "action": "UPDATE_ORG_ACCESS_RESTRICTIONS",
+          "category": "METADATA",
+          "units": 1,
+          "unitsBasis": "perRequest",
+          "unitsNote": "1 unit per request",
+          "categoryFrequencyLimitPerMinute": 60
+        }
+      }
+    },
+    "/restapi/v2/security-controls/workspaces/{workspace-id}/access-restrictions": {
+      "get": {
+        "operationId": "getWorkspaceAccessRestrictions",
+        "summary": "Get Workspace Access Restrictions",
+        "description": "Returns the access restriction settings in effect for one workspace and whether they come from the organisation or from the workspace. Feeds Update Workspace Access Restrictions.\n\n**Rate limit**\n\n- Costs 1 API unit per request.\n- Unit category METADATA: up to 60 requests per minute across every METADATA-category call of the organization.\n\n**Error codes**\n\n| Code | Meaning | Resolution |\n| --- | --- | --- |\n| 7301 | SECURITY_NOT_PERMITTED - The caller is not an Account Admin or Organization Admin, or the request came through a Client Portal / White Label domain. | Call from the standard API host as an Account Admin or Organization Admin of the organisation. |\n| 7387 | DBID_NOT_BELONGS_TO_ZSOID - The workspace does not exist in the organisation named in ZANALYTICS-ORGID. | Verify and that the ZANALYTICS-ORGID header matches the organisation that owns it. |\n| 8083 | ORGID_NOT_PRESENT_IN_THE_HEADER - The ZANALYTICS-ORGID header is missing or empty. | Add the ZANALYTICS-ORGID header with your Organization ID. |\n| 8084 | ORGID_NOT_EXIST - No organisation exists with the given ID. | Use the orgId returned by the organisation listing API. |\n| 8535 | INVALID_OAUTHTOKEN - Invalid or expired OAuth token. | Provide a valid token with scope ZohoAnalytics.metadata.read. |",
+        "tags": [
+          "Security Controls"
+        ],
+        "security": [
+          {
+            "iam-oauth2-schema": [
+              "ZohoAnalytics.metadata.read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/org-id"
+          },
+          {
+            "$ref": "#/components/parameters/workspace-id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully completed the get workspace access restrictions request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetWorkspaceAccessRestrictionsResponse"
+                },
+                "examples": {
+                  "okWorkspaceThat": {
+                    "description": "OK — Workspace that follows the organisation (configurationSource is ORG).",
+                    "summary": "OK Workspace that follows",
+                    "value": {
+                      "status": "success",
+                      "summary": "Get workspace access restrictions",
+                      "data": {
+                        "accessRestrictionEnabled": true,
+                        "configurationSource": "ORG",
+                        "shareViews": {
+                          "domainRestrictionEnabled": true,
+                          "trustedDomains": [
+                            "example.com",
+                            "partner.example.org"
+                          ]
+                        },
+                        "privateLinks": {
+                          "enabled": false,
+                          "domainRestrictionEnabled": false,
+                          "trustedDomains": []
+                        },
+                        "publicViews": {
+                          "enabled": true,
+                          "domainRestrictionEnabled": false,
+                          "trustedDomains": []
+                        },
+                        "exportViews": {
+                          "enabled": true
+                        },
+                        "emailViews": {
+                          "enabled": true,
+                          "domainRestrictionEnabled": true,
+                          "trustedDomains": [
+                            "example.com"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "okWorkspaceWith": {
+                    "description": "OK — Workspace with its own settings (configurationSource is WORKSPACE).",
+                    "summary": "OK Workspace with its",
+                    "value": {
+                      "status": "success",
+                      "summary": "Get workspace access restrictions",
+                      "data": {
+                        "accessRestrictionEnabled": true,
+                        "configurationSource": "WORKSPACE",
+                        "shareViews": {
+                          "domainRestrictionEnabled": false,
+                          "trustedDomains": []
+                        },
+                        "privateLinks": {
+                          "enabled": true,
+                          "domainRestrictionEnabled": false,
+                          "trustedDomains": []
+                        },
+                        "publicViews": {
+                          "enabled": false,
+                          "domainRestrictionEnabled": false,
+                          "trustedDomains": []
+                        },
+                        "exportViews": {
+                          "enabled": false
+                        },
+                        "emailViews": {
+                          "enabled": false,
+                          "domainRestrictionEnabled": false,
+                          "trustedDomains": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/common/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+          },
+          "500": {
+            "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/common/zoho-analytics-api-common.json#/components/responses/UnexpectedErrorResponse"
+          }
+        },
+        "x-api-units": {
+          "apiId": 3069,
+          "action": "GET_WORKSPACE_ACCESS_RESTRICTIONS",
+          "category": "METADATA",
+          "units": 1,
+          "unitsBasis": "perRequest",
+          "unitsNote": "1 unit per request",
+          "categoryFrequencyLimitPerMinute": 60
+        }
+      },
+      "put": {
+        "operationId": "updateWorkspaceAccessRestrictions",
+        "summary": "Update Workspace Access Restrictions",
+        "description": "Switches one workspace between following the organisation and having its own settings, and updates the workspace's own sections. Returns no body. Read the current state first with Get Workspace Access Restrictions, and read Organisation and Workspace Settings Lifecycle before the first override.\n\n**Rate limit**\n\n- Costs 1 API unit per request.\n- Unit category METADATA: up to 60 requests per minute across every METADATA-category call of the organization.\n\n**Error codes**\n\n| Code | Meaning | Resolution |\n| --- | --- | --- |\n| 7301 | SECURITY_NOT_PERMITTED - The caller is not an Account Admin or Organization Admin, or the request came through a Client Portal / White Label domain. | Call from the standard API host as an Account Admin or Organization Admin of the organisation. |\n| 7387 | DBID_NOT_BELONGS_TO_ZSOID - The workspace does not exist in the organisation named in ZANALYTICS-ORGID. | Verify and that the ZANALYTICS-ORGID header matches the organisation that owns it. |\n| 8077 | EMPTY_JSON_CONFIGURATION - CONFIG is present but empty. | Send a JSON object in CONFIG. |\n| 8080 | INVALID_JSON_CONFIGURATION - CONFIG is not valid JSON, or the workspace follows the organisation and the request has neither useOrganizationSettings nor a non-empty section. | Send valid JSON with at least one attribute to change. |\n| 8083 | ORGID_NOT_PRESENT_IN_THE_HEADER - The ZANALYTICS-ORGID header is missing or empty. | Add the ZANALYTICS-ORGID header with your Organization ID. |\n| 8084 | ORGID_NOT_EXIST - No organisation exists with the given ID. | Use the orgId returned by the organisation listing API. |\n| 8192 | TRUSTED_DOMAINS_WITHOUT_DOMAIN_RESTRICTION - trustedDomains was sent for a section whose domain restriction is off or is being switched off. | Send domainRestrictionEnabled: true with the list, or send domainRestrictionEnabled: false with trustedDomains: [] to clear it. |\n| 8193 | TRUSTED_DOMAINS_EMPTY - The domain restriction is on, or being switched on, but the section has no trusted domains. | Send at least one domain in trustedDomains, or switch the restriction off. |\n| 8194 | DOMAIN_RESTRICTION_NOT_ALLOWED_WHEN_DISABLED - Domain attributes were sent for privateLinks, publicViews or emailViews while that feature is disabled or is being disabled. | Enable the feature in the same request, or remove the domain attributes. |\n| 8195 | EMAIL_NOT_ALLOWED_WHEN_EXPORT_DISABLED - emailViews was sent while export is disabled or is being disabled, and email views would stay enabled. | Enable export in the same request, or send emailViews: {\"enabled\": false} when disabling export. |\n| 8197 | ORG_ACCESS_RESTRICTION_NOT_ENABLED - The organisation's accessRestrictionEnabled is false. | Enable access restrictions for the organisation with Update Org Access Restrictions, then retry. |\n| 8198 | SECTIONS_NOT_ALLOWED_WHEN_APPLYING_ORG_SETTINGS - useOrganizationSettings: true was sent together with a non-empty section. | Send useOrganizationSettings: true on its own. |\n| 8199 | WORKSPACE_SETTINGS_NOT_ENABLED - The workspace follows the organisation, and the request would update it without useOrganizationSettings: false. | Send useOrganizationSettings: false in the same request to give the workspace its own settings. |\n| 8535 | INVALID_OAUTHTOKEN - Invalid or expired OAuth token. | Provide a valid token with scope ZohoAnalytics.metadata.update. |",
+        "tags": [
+          "Security Controls"
+        ],
+        "security": [
+          {
+            "iam-oauth2-schema": [
+              "ZohoAnalytics.metadata.update"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/org-id"
+          },
+          {
+            "$ref": "#/components/parameters/workspace-id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "CONFIG"
+                ],
+                "properties": {
+                  "CONFIG": {
+                    "$ref": "#/components/schemas/UpdateWorkspaceAccessRestrictionsConfig"
+                  }
+                }
+              },
+              "encoding": {
+                "CONFIG": {
+                  "contentType": "application/json"
+                }
+              },
+              "examples": {
+                "giveTheWorkspace": {
+                  "description": "Give the workspace its own settings, naming the sections explicitly.",
+                  "summary": "Give the workspace its",
+                  "value": {
+                    "CONFIG": {
+                      "useOrganizationSettings": false,
+                      "shareViews": {
+                        "domainRestrictionEnabled": true,
+                        "trustedDomains": [
+                          "example.com",
+                          "partner.example.org"
+                        ]
+                      },
+                      "privateLinks": {
+                        "enabled": false
+                      },
+                      "publicViews": {
+                        "enabled": false
+                      },
+                      "exportViews": {
+                        "enabled": true
+                      },
+                      "emailViews": {
+                        "enabled": true,
+                        "domainRestrictionEnabled": true,
+                        "trustedDomains": [
+                          "example.com"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "updateOneSection": {
+                  "description": "Update one section on a workspace that already has its own settings.",
+                  "summary": "Update one section on",
+                  "value": {
+                    "CONFIG": {
+                      "exportViews": {
+                        "enabled": false
+                      },
+                      "emailViews": {
+                        "enabled": false
+                      }
+                    }
+                  }
+                },
+                "returnTheWorkspace": {
+                  "description": "Return the workspace to the organisation's settings.",
+                  "summary": "Return the workspace to",
+                  "value": {
+                    "CONFIG": {
+                      "useOrganizationSettings": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successfully completed. No response body is returned."
+          },
+          "4XX": {
+            "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/common/zoho-analytics-api-common.json#/components/responses/CommonErrorResponse"
+          },
+          "500": {
+            "$ref": "https://raw.githubusercontent.com/zoho/analytics-oas/refs/heads/main/v2.0/common/zoho-analytics-api-common.json#/components/responses/UnexpectedErrorResponse"
+          }
+        },
+        "x-api-units": {
+          "apiId": 3070,
+          "action": "UPDATE_WORKSPACE_ACCESS_RESTRICTIONS",
+          "category": "METADATA",
+          "units": 1,
+          "unitsBasis": "perRequest",
+          "unitsNote": "1 unit per request",
+          "categoryFrequencyLimitPerMinute": 60
         }
       }
     }
@@ -545,7 +1267,16 @@
         "schema": {
           "type": "string"
         },
-        "description": "ID of the organisation on which the operation has to be performed. The organisation ID can be obtained using the Get Organizations API."
+        "description": "ID of the organisation on which the operation has to be performed. It is shown in the Zoho Analytics UI under Settings > Organisation."
+      },
+      "workspace-id": {
+        "name": "workspace-id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "ID of the workspace."
       }
     },
     "securitySchemes": {
@@ -561,178 +1292,14 @@
               "ZohoAnalytics.metadata.all": "Full access to metadata in Zoho Analytics.",
               "ZohoAnalytics.usermanagement.read": "Read user management data in Zoho Analytics.",
               "ZohoAnalytics.usermanagement.all": "Full access to user management in Zoho Analytics.",
-              "ZohoAnalytics.fullaccess.all": "Full access to all Zoho Analytics features."
+              "ZohoAnalytics.fullaccess.all": "Full access to all Zoho Analytics features.",
+              "ZohoAnalytics.metadata.update": "Update security controls resources"
             }
           }
         }
       }
     },
     "schemas": {
-      "Org": {
-        "type": "object",
-        "title": "Org",
-        "description": "Details of a single organisation that the authenticated user belongs to.",
-        "properties": {
-          "orgId": {
-            "type": "string",
-            "description": "Unique identifier of the organisation. Send this value as the `ZANALYTICS-ORGID` header in organisation-scoped and workspace-scoped APIs.",
-            "examples": [
-              "64036181"
-            ]
-          },
-          "orgName": {
-            "type": "string",
-            "description": "Display name of the organisation.",
-            "examples": [
-              "acme-analytics"
-            ]
-          },
-          "orgDesc": {
-            "type": "string",
-            "description": "Description of the organisation. Returns an empty string when no description is set.",
-            "examples": [
-              ""
-            ]
-          },
-          "createdBy": {
-            "type": "string",
-            "description": "Email address of the user who created and owns the organisation.",
-            "examples": [
-              "admin@acme.com"
-            ]
-          },
-          "createdByZuId": {
-            "type": "string",
-            "description": "Zoho User ID of the organisation creator.",
-            "examples": [
-              "64035928"
-            ]
-          },
-          "planName": {
-            "type": "string",
-            "description": "Name of the subscription plan currently active for the organisation, such as Basic, Standard, Premium, Enterprise, or Ultimate.",
-            "examples": [
-              "Enterprise"
-            ]
-          },
-          "isDefault": {
-            "type": "boolean",
-            "description": "Denotes whether this is the default organisation of the authenticated user.",
-            "enum": [
-              true,
-              false
-            ]
-          },
-          "numberOfWorkspaces": {
-            "type": "integer",
-            "description": "Number of workspaces visible to the authenticated user in this organisation. For the Account Admin and Organization Admin roles this is the total number of workspaces in the organisation. For every other role it is the number of workspaces shared with the user.",
-            "examples": [
-              41
-            ]
-          },
-          "role": {
-            "type": "string",
-            "description": "Role of the authenticated user in this organisation.",
-            "enum": [
-              "Account Admin",
-              "Organization Admin",
-              "User"
-            ]
-          }
-        },
-        "examples": [
-          {
-            "orgId": "64036181",
-            "orgName": "acme-analytics",
-            "orgDesc": "",
-            "createdBy": "admin@acme.com",
-            "createdByZuId": "64035928",
-            "planName": "Enterprise",
-            "isDefault": true,
-            "numberOfWorkspaces": 41,
-            "role": "Account Admin"
-          }
-        ]
-      },
-      "OrgList": {
-        "type": "array",
-        "title": "OrgList",
-        "description": "JSONArray that holds the organisations the authenticated user is a member of. Returns an empty array when the user has no Zoho Analytics organisation membership.",
-        "items": {
-          "$ref": "#/components/schemas/Org"
-        },
-        "examples": [
-          [
-            {
-              "orgId": "64036181",
-              "orgName": "acme-analytics",
-              "orgDesc": "",
-              "createdBy": "admin@acme.com",
-              "createdByZuId": "64035928",
-              "planName": "Enterprise",
-              "isDefault": true,
-              "numberOfWorkspaces": 41,
-              "role": "Account Admin"
-            }
-          ]
-        ]
-      },
-      "GetOrganizationsResponse": {
-        "type": "object",
-        "title": "GetOrganizationsResponse",
-        "description": "Response returned by the Get Organizations API.",
-        "properties": {
-          "status": {
-            "type": "string",
-            "description": "Status of the API request.",
-            "enum": [
-              "success",
-              "failure"
-            ],
-            "x-enumDescriptions": {
-              "success": "Request succeeded",
-              "failure": "Request failed"
-            }
-          },
-          "summary": {
-            "type": "string",
-            "description": "Short summary of the operation performed.",
-            "examples": [
-              "Get organizations"
-            ]
-          },
-          "data": {
-            "type": "object",
-            "description": "Container that holds the organisation list.",
-            "properties": {
-              "orgs": {
-                "$ref": "#/components/schemas/OrgList"
-              }
-            }
-          }
-        },
-        "examples": [
-          {
-            "status": "success",
-            "summary": "Get organizations",
-            "data": {
-              "orgs": [
-                {
-                  "orgId": "64036181",
-                  "orgName": "acme-analytics",
-                  "orgDesc": "",
-                  "createdBy": "admin@acme.com",
-                  "createdByZuId": "64035928",
-                  "planName": "Enterprise",
-                  "isDefault": true,
-                  "numberOfWorkspaces": 41,
-                  "role": "Account Admin"
-                }
-              ]
-            }
-          }
-        ]
-      },
       "ResourceUsage": {
         "type": "object",
         "title": "ResourceUsage",
@@ -1378,6 +1945,1132 @@
                 "workspaceDesc": "",
                 "orgId": "106044221"
               }
+            }
+          }
+        ]
+      },
+      "GetOrgAccessRestrictionsResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "\"success\" on a successful call, \"failure\" on error."
+          },
+          "summary": {
+            "type": "string",
+            "description": "Localised operation summary. \"Get org access restrictions\" for this API."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "accessRestrictionEnabled": {
+                "type": "boolean",
+                "description": "The master switch. Always present. false for an organisation that has never configured access restrictions. When false, none of the settings below are enforced."
+              },
+              "shareViews": {
+                "type": "object",
+                "properties": {
+                  "domainRestrictionEnabled": {
+                    "type": "boolean",
+                    "description": "true when views can be shared only to users from trustedDomains. Always present."
+                  },
+                  "trustedDomains": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Trusted domains for sharing. Always present; [] when none. Returned even when domainRestrictionEnabled is false."
+                  }
+                },
+                "description": "Sharing restriction. Always present."
+              },
+              "privateLinks": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean",
+                    "description": "true when private links can be generated. Always present."
+                  },
+                  "domainRestrictionEnabled": {
+                    "type": "boolean",
+                    "description": "true when private links admit only users from trustedDomains. Always present."
+                  },
+                  "trustedDomains": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Trusted domains for private links. Always present; [] when none."
+                  }
+                },
+                "description": "Private link settings. Always present."
+              },
+              "publicViews": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean",
+                    "description": "true when views can be made public. Always present."
+                  },
+                  "domainRestrictionEnabled": {
+                    "type": "boolean",
+                    "description": "true when public views admit only users from trustedDomains. Always present."
+                  },
+                  "trustedDomains": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Trusted domains for public views. Always present; [] when none."
+                  }
+                },
+                "description": "Public view settings. Always present."
+              },
+              "exportViews": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean",
+                    "description": "true when views and data can be exported. Always present."
+                  }
+                },
+                "description": "Export settings. Always present."
+              },
+              "emailViews": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean",
+                    "description": "true when views can be emailed. Always present. Reports false after export has been disabled."
+                  },
+                  "domainRestrictionEnabled": {
+                    "type": "boolean",
+                    "description": "true when emails can go only to trustedDomains. Always present."
+                  },
+                  "trustedDomains": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Trusted domains for email. Always present; [] when none."
+                  }
+                },
+                "description": "Email view settings. Always present."
+              }
+            },
+            "description": "Response payload wrapper."
+          }
+        },
+        "title": "GetOrgAccessRestrictionsResponse",
+        "examples": [
+          {
+            "status": "success",
+            "summary": "Get org access restrictions",
+            "data": {
+              "accessRestrictionEnabled": true,
+              "shareViews": {
+                "domainRestrictionEnabled": true,
+                "trustedDomains": [
+                  "example.com",
+                  "partner.example.org"
+                ]
+              },
+              "privateLinks": {
+                "enabled": false,
+                "domainRestrictionEnabled": false,
+                "trustedDomains": []
+              },
+              "publicViews": {
+                "enabled": true,
+                "domainRestrictionEnabled": false,
+                "trustedDomains": []
+              },
+              "exportViews": {
+                "enabled": true
+              },
+              "emailViews": {
+                "enabled": true,
+                "domainRestrictionEnabled": true,
+                "trustedDomains": [
+                  "example.com"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "AccessRestrictionShareViews": {
+        "type": "object",
+        "title": "AccessRestrictionShareViews",
+        "description": "Sharing restriction. See shareViews Fields.",
+        "properties": {
+          "domainRestrictionEnabled": {
+            "type": "boolean",
+            "description": "true allows sharing of views in this workspace only to users from trustedDomains. Turning it on requires at least one trusted domain, sent now or already stored for the workspace (8193)."
+          },
+          "trustedDomains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Complete list of trusted domains, 0-100 entries, each a domain such as example.com. Replaces the workspace's stored list; the organisation's list is never copied or merged. See How Section Updates Are Validated for 8192 and 8193."
+          }
+        },
+        "examples": [
+          {
+            "domainRestrictionEnabled": true,
+            "trustedDomains": [
+              "example.com",
+              "partner.example.org"
+            ]
+          }
+        ]
+      },
+      "AccessRestrictionPrivateLinks": {
+        "type": "object",
+        "title": "AccessRestrictionPrivateLinks",
+        "description": "Private link settings. See privateLinks Fields.",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "false stops private links from being generated in this workspace. Domain attributes cannot be changed while private links are disabled (8194), except to switch the restriction off and clear the list in the same request."
+          },
+          "domainRestrictionEnabled": {
+            "type": "boolean",
+            "description": "true makes private links prompt for login and admit only users from trustedDomains. Same list requirements as in shareViews."
+          },
+          "trustedDomains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Complete list of trusted domains, 0-100 entries. Replaces the workspace's stored list."
+          }
+        },
+        "examples": [
+          {
+            "enabled": false
+          }
+        ]
+      },
+      "AccessRestrictionPublicViews": {
+        "type": "object",
+        "title": "AccessRestrictionPublicViews",
+        "description": "Public view settings. See publicViews Fields.",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "false stops views in this workspace from being made public. Domain attributes cannot be changed while public views are disabled (8194), except to switch the restriction off and clear the list in the same request."
+          },
+          "domainRestrictionEnabled": {
+            "type": "boolean",
+            "description": "true makes public views prompt for login and admit only users from trustedDomains. Same list requirements as in shareViews."
+          },
+          "trustedDomains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Complete list of trusted domains, 0-100 entries. Replaces the workspace's stored list."
+          }
+        },
+        "examples": [
+          {
+            "enabled": false
+          }
+        ]
+      },
+      "AccessRestrictionExportViews": {
+        "type": "object",
+        "title": "AccessRestrictionExportViews",
+        "description": "Export settings. Setting enabled to false also disables email views. See exportViews Fields.",
+        "required": [
+          "enabled"
+        ],
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "false disables exporting of views and data in this workspace and disables email views. true re-enables export but does not re-enable email views. exportViews has no other attribute, so an empty exportViews object is rejected."
+          }
+        },
+        "examples": [
+          {
+            "enabled": true
+          }
+        ]
+      },
+      "AccessRestrictionEmailViews": {
+        "type": "object",
+        "title": "AccessRestrictionEmailViews",
+        "description": "Email view settings. Present at all while export is disabled → 8195. See emailViews Fields.",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "false stops views in this workspace from being emailed. Cannot be true in the same request that disables export (8195)."
+          },
+          "domainRestrictionEnabled": {
+            "type": "boolean",
+            "description": "true limits email recipients to trustedDomains. Same list requirements as in shareViews."
+          },
+          "trustedDomains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Complete list of trusted domains, 0-100 entries. Replaces the workspace's stored list."
+          }
+        },
+        "examples": [
+          {
+            "enabled": true,
+            "domainRestrictionEnabled": true,
+            "trustedDomains": [
+              "example.com"
+            ]
+          }
+        ]
+      },
+      "UpdateOrgAccessRestrictionsConfig": {
+        "type": "object",
+        "title": "UpdateOrgAccessRestrictionsConfig",
+        "description": "JSONObject that holds the configuration for this request.",
+        "properties": {
+          "accessRestrictionEnabled": {
+            "type": "boolean",
+            "description": "Master switch for the organisation. false stops enforcement everywhere, for the organisation and every workspace, without deleting any setting. Cannot be combined with sections when set to false (8200). While the switch is off, sections are accepted only if this attribute is true in the same request (8196)."
+          },
+          "shareViews": {
+            "$ref": "#/components/schemas/AccessRestrictionShareViews"
+          },
+          "privateLinks": {
+            "$ref": "#/components/schemas/AccessRestrictionPrivateLinks"
+          },
+          "publicViews": {
+            "$ref": "#/components/schemas/AccessRestrictionPublicViews"
+          },
+          "exportViews": {
+            "$ref": "#/components/schemas/AccessRestrictionExportViews"
+          },
+          "emailViews": {
+            "$ref": "#/components/schemas/AccessRestrictionEmailViews"
+          }
+        },
+        "examples": [
+          {
+            "accessRestrictionEnabled": true
+          }
+        ]
+      },
+      "GetWorkspaceAccessRestrictionsResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "\"success\" on a successful call, \"failure\" on error."
+          },
+          "summary": {
+            "type": "string",
+            "description": "Localised operation summary. \"Get workspace access restrictions\" for this API."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "accessRestrictionEnabled": {
+                "type": "boolean",
+                "description": "The organisation's master switch, not a workspace setting. Always present. When false, nothing below is enforced."
+              },
+              "configurationSource": {
+                "type": "string",
+                "description": "Where the values below come from. Always present. See configurationSource Values."
+              },
+              "shareViews": {
+                "type": "object",
+                "description": "Sharing restriction in effect. Always present. Fields as in Get Org Access Restrictions."
+              },
+              "privateLinks": {
+                "type": "object",
+                "description": "Private link settings in effect. Always present."
+              },
+              "publicViews": {
+                "type": "object",
+                "description": "Public view settings in effect. Always present."
+              },
+              "exportViews": {
+                "type": "object",
+                "description": "Export settings in effect. Always present."
+              },
+              "emailViews": {
+                "type": "object",
+                "description": "Email view settings in effect. Always present."
+              }
+            },
+            "description": "Response payload wrapper."
+          }
+        },
+        "title": "GetWorkspaceAccessRestrictionsResponse",
+        "examples": [
+          {
+            "status": "success",
+            "summary": "Get workspace access restrictions",
+            "data": {
+              "accessRestrictionEnabled": true,
+              "configurationSource": "ORG",
+              "shareViews": {
+                "domainRestrictionEnabled": true,
+                "trustedDomains": [
+                  "example.com",
+                  "partner.example.org"
+                ]
+              },
+              "privateLinks": {
+                "enabled": false,
+                "domainRestrictionEnabled": false,
+                "trustedDomains": []
+              },
+              "publicViews": {
+                "enabled": true,
+                "domainRestrictionEnabled": false,
+                "trustedDomains": []
+              },
+              "exportViews": {
+                "enabled": true
+              },
+              "emailViews": {
+                "enabled": true,
+                "domainRestrictionEnabled": true,
+                "trustedDomains": [
+                  "example.com"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "UpdateWorkspaceAccessRestrictionsConfig": {
+        "type": "object",
+        "title": "UpdateWorkspaceAccessRestrictionsConfig",
+        "description": "JSONObject that holds the configuration for this request.",
+        "properties": {
+          "useOrganizationSettings": {
+            "type": "boolean",
+            "description": "false gives the workspace its own settings; true makes it follow the organisation. When omitted, the workspace's current mode is kept - which means omitting it on a workspace that follows the organisation is the same as sending true (8199 if sections are present). true cannot be combined with sections (8198). Setting true keeps the workspace's own values but ignores them."
+          },
+          "shareViews": {
+            "$ref": "#/components/schemas/AccessRestrictionShareViews"
+          },
+          "privateLinks": {
+            "$ref": "#/components/schemas/AccessRestrictionPrivateLinks"
+          },
+          "publicViews": {
+            "$ref": "#/components/schemas/AccessRestrictionPublicViews"
+          },
+          "exportViews": {
+            "$ref": "#/components/schemas/AccessRestrictionExportViews"
+          },
+          "emailViews": {
+            "$ref": "#/components/schemas/AccessRestrictionEmailViews"
+          }
+        },
+        "examples": [
+          {
+            "useOrganizationSettings": false,
+            "shareViews": {
+              "domainRestrictionEnabled": true,
+              "trustedDomains": [
+                "example.com",
+                "partner.example.org"
+              ]
+            },
+            "privateLinks": {
+              "enabled": false
+            },
+            "publicViews": {
+              "enabled": false
+            },
+            "exportViews": {
+              "enabled": true
+            },
+            "emailViews": {
+              "enabled": true,
+              "domainRestrictionEnabled": true,
+              "trustedDomains": [
+                "example.com"
+              ]
+            }
+          }
+        ]
+      },
+      "OrgWorkspace": {
+        "type": "object",
+        "title": "OrgWorkspace",
+        "description": "JSONObject that holds one workspace of the organisation that the calling user can reach.",
+        "properties": {
+          "workspaceId": {
+            "type": "string",
+            "description": "ID of the workspace. Send this value as `<workspace-id>` in workspace-scoped API URLs.",
+            "examples": [
+              "137687000271334001"
+            ]
+          },
+          "workspaceName": {
+            "type": "string",
+            "description": "Name of the workspace.",
+            "examples": [
+              "Sales Analysis"
+            ]
+          },
+          "workspaceDesc": {
+            "type": "string",
+            "description": "Description of the workspace. Returns an empty string when no description is set.",
+            "examples": [
+              "Quarterly sales dashboards"
+            ]
+          },
+          "orgId": {
+            "type": "string",
+            "description": "ID of the organisation that owns the workspace.",
+            "examples": [
+              "700000123456"
+            ]
+          },
+          "createdTime": {
+            "type": "string",
+            "description": "Creation time of the workspace, as epoch milliseconds returned as a string.",
+            "examples": [
+              "1718361737000"
+            ]
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "Email address of the workspace owner. The key is omitted when no address can be resolved.",
+            "examples": [
+              "jane.doe@example.com"
+            ]
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "Returns true when this is the default workspace of the calling user. It is a per-user setting rather than a property of the workspace, so two users can see different values for the same workspace."
+          }
+        },
+        "examples": [
+          {
+            "workspaceId": "137687000271334001",
+            "workspaceName": "Sales Analysis",
+            "workspaceDesc": "Quarterly sales dashboards",
+            "orgId": "700000123456",
+            "createdTime": "1718361737000",
+            "createdBy": "jane.doe@example.com",
+            "isDefault": true
+          }
+        ]
+      },
+      "OrgWorkspaceList": {
+        "type": "array",
+        "title": "OrgWorkspaceList",
+        "description": "JSONArray that holds the workspaces of the organisation that the calling user can reach. It is always present, and is empty when nothing is visible to the caller.",
+        "items": {
+          "$ref": "#/components/schemas/OrgWorkspace"
+        },
+        "examples": [
+          [
+            {
+              "workspaceId": "137687000271334001",
+              "workspaceName": "Sales Analysis",
+              "workspaceDesc": "Quarterly sales dashboards",
+              "orgId": "700000123456",
+              "createdTime": "1718361737000",
+              "createdBy": "jane.doe@example.com",
+              "isDefault": true
+            },
+            {
+              "workspaceId": "466206000000071000",
+              "workspaceName": "Support Metrics",
+              "workspaceDesc": "",
+              "orgId": "700000123456",
+              "createdTime": "1707286805000",
+              "createdBy": "jane.doe@example.com",
+              "isDefault": false
+            }
+          ]
+        ]
+      },
+      "GetOrgWorkspacesResponse": {
+        "type": "object",
+        "title": "GetOrgWorkspacesResponse",
+        "description": "Response returned by the Get Org Workspaces API.",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Status of the API request.",
+            "enum": [
+              "success",
+              "failure"
+            ],
+            "x-enumDescriptions": {
+              "success": "Request succeeded",
+              "failure": "Request failed"
+            }
+          },
+          "summary": {
+            "type": "string",
+            "description": "Short summary of the operation performed.",
+            "examples": [
+              "Get org workspaces"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "description": "Container that holds the workspace list.",
+            "properties": {
+              "workspaces": {
+                "$ref": "#/components/schemas/OrgWorkspaceList"
+              }
+            }
+          }
+        },
+        "examples": [
+          {
+            "status": "success",
+            "summary": "Get org workspaces",
+            "data": {
+              "workspaces": [
+                {
+                  "workspaceId": "137687000271334001",
+                  "workspaceName": "Sales Analysis",
+                  "workspaceDesc": "Quarterly sales dashboards",
+                  "orgId": "700000123456",
+                  "createdTime": "1718361737000",
+                  "createdBy": "jane.doe@example.com",
+                  "isDefault": true
+                },
+                {
+                  "workspaceId": "466206000000071000",
+                  "workspaceName": "Support Metrics",
+                  "workspaceDesc": "",
+                  "orgId": "700000123456",
+                  "createdTime": "1707286805000",
+                  "createdBy": "jane.doe@example.com",
+                  "isDefault": false
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "GetOrgDashboardsConfig": {
+        "type": "object",
+        "title": "GetOrgDashboardsConfig",
+        "description": "JSONObject that selects the workspaces to scan, pages the result and filters it by dashboard name. Every attribute is optional; omit the whole CONFIG to list the first 100 dashboards across every workspace the caller can see.",
+        "properties": {
+          "workspaceIds": {
+            "type": "array",
+            "description": "IDs of the workspaces to list dashboards from. Holds 0 to 1,000 entries and at most 10,000 characters in all; duplicates are ignored. Every ID must belong to the organisation named in the header, otherwise the whole request fails with error 7387. The IDs are used as given and are not compared with the workspaces the Get Org Workspaces API returns for the caller, and the view-level access check still applies. When this is omitted, or sent as an empty array, every workspace visible to the caller is scanned.",
+            "minItems": 0,
+            "maxItems": 1000,
+            "items": {
+              "type": "string",
+              "examples": [
+                "137687000271334001"
+              ]
+            }
+          },
+          "pageNo": {
+            "type": "integer",
+            "description": "The page of the result to return. A value outside 1 to 1,000 fails with error 8544.",
+            "default": 1,
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "recordsPerPage": {
+            "type": "integer",
+            "description": "The number of dashboards to return per page. A value outside 1 to 500 fails with error 8544.",
+            "default": 100,
+            "minimum": 1,
+            "maximum": 500
+          },
+          "searchKey": {
+            "type": "string",
+            "description": "Returns only the dashboards whose name contains this text. The text is matched as one phrase and is not split on spaces, leading and trailing spaces are trimmed, and the filter is applied before paging. An empty or blank value fails with error 8539; omit the attribute to apply no filter. Maximum length is 100 characters.",
+            "maxLength": 100,
+            "examples": [
+              "Sales"
+            ]
+          }
+        },
+        "examples": [
+          {
+            "workspaceIds": [
+              "137687000271334001",
+              "466206000000071000"
+            ],
+            "pageNo": 2,
+            "recordsPerPage": 10
+          }
+        ]
+      },
+      "OrgDashboardView": {
+        "type": "object",
+        "title": "OrgDashboardView",
+        "description": "JSONObject that holds one dashboard the calling user may read.",
+        "properties": {
+          "viewId": {
+            "type": "string",
+            "description": "ID of the dashboard.",
+            "examples": [
+              "466206000000106002"
+            ]
+          },
+          "viewName": {
+            "type": "string",
+            "description": "Name of the dashboard.",
+            "examples": [
+              "Support Overview"
+            ]
+          },
+          "viewDesc": {
+            "type": "string",
+            "description": "Description of the dashboard. Returns an empty string when no description is set.",
+            "examples": [
+              "Open tickets by priority"
+            ]
+          },
+          "viewType": {
+            "type": "string",
+            "description": "Type of the view. This API returns dashboards alone, so the value is always Dashboard.",
+            "enum": [
+              "Dashboard"
+            ],
+            "x-enumDescriptions": {
+              "Dashboard": "A dashboard"
+            }
+          },
+          "parentViewId": {
+            "type": "string",
+            "description": "ID of the parent view. Returns an empty string when the dashboard has no parent.",
+            "examples": [
+              ""
+            ]
+          },
+          "folderId": {
+            "type": "string",
+            "description": "ID of the folder that holds the dashboard. A dashboard that is in no folder is reported as the string null.",
+            "examples": [
+              "466206000000071005"
+            ]
+          },
+          "createdTime": {
+            "type": "string",
+            "description": "Creation time of the dashboard, as epoch milliseconds returned as a string.",
+            "examples": [
+              "1718361737000"
+            ]
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "Email address of the dashboard owner. Returns an empty string when the caller is not an active user of the owning organisation, and the key is omitted when no address can be resolved.",
+            "examples": [
+              "jane.doe@example.com"
+            ]
+          },
+          "lastModifiedTime": {
+            "type": "string",
+            "description": "Time the dashboard was last changed, as epoch milliseconds returned as a string. It covers both the last data change and the last design change.",
+            "examples": [
+              "1720000000000"
+            ]
+          },
+          "lastModifiedBy": {
+            "type": "string",
+            "description": "Email address of the user who last changed the dashboard. It follows the same empty-string and omission rules as createdBy.",
+            "examples": [
+              "jane.doe@example.com"
+            ]
+          },
+          "isFavorite": {
+            "type": "boolean",
+            "description": "Returns true when the calling user has marked the dashboard as a favourite. It describes the caller rather than the dashboard."
+          },
+          "sharedBy": {
+            "type": "string",
+            "description": "Email address of the user who shared the dashboard with the caller. It follows the same empty-string and omission rules as createdBy, and the key is left out whenever no address is available for the sharer.",
+            "examples": [
+              "jane.doe@example.com"
+            ]
+          },
+          "workspaceId": {
+            "type": "string",
+            "description": "ID of the workspace that holds the dashboard.",
+            "examples": [
+              "466206000000071000"
+            ]
+          },
+          "orgId": {
+            "type": "string",
+            "description": "ID of the organisation that owns the workspace.",
+            "examples": [
+              "700000123456"
+            ]
+          }
+        },
+        "examples": [
+          {
+            "viewId": "466206000000106002",
+            "viewName": "Support Overview",
+            "viewDesc": "Open tickets by priority",
+            "viewType": "Dashboard",
+            "parentViewId": "",
+            "folderId": "466206000000071005",
+            "createdTime": "1718361737000",
+            "createdBy": "jane.doe@example.com",
+            "lastModifiedTime": "1720000000000",
+            "lastModifiedBy": "jane.doe@example.com",
+            "isFavorite": true,
+            "sharedBy": "jane.doe@example.com",
+            "workspaceId": "466206000000071000",
+            "orgId": "700000123456"
+          }
+        ]
+      },
+      "OrgDashboardList": {
+        "type": "array",
+        "title": "OrgDashboardList",
+        "description": "JSONArray that holds the dashboards on this page. It is always present, and is empty when nothing is visible to the caller. The array is named views although every entry is a dashboard.",
+        "items": {
+          "$ref": "#/components/schemas/OrgDashboardView"
+        },
+        "examples": [
+          [
+            {
+              "viewId": "466206000000106002",
+              "viewName": "Support Overview",
+              "viewDesc": "Open tickets by priority",
+              "viewType": "Dashboard",
+              "parentViewId": "",
+              "folderId": "466206000000071005",
+              "createdTime": "1718361737000",
+              "createdBy": "jane.doe@example.com",
+              "lastModifiedTime": "1720000000000",
+              "lastModifiedBy": "jane.doe@example.com",
+              "isFavorite": true,
+              "sharedBy": "jane.doe@example.com",
+              "workspaceId": "466206000000071000",
+              "orgId": "700000123456"
+            },
+            {
+              "viewId": "466206000000106003",
+              "viewName": "Support Backlog",
+              "viewDesc": "",
+              "viewType": "Dashboard",
+              "parentViewId": "",
+              "folderId": "null",
+              "createdTime": "1707286805000",
+              "createdBy": "jane.doe@example.com",
+              "lastModifiedTime": "1719000000000",
+              "lastModifiedBy": "john.roe@example.com",
+              "isFavorite": false,
+              "sharedBy": "jane.doe@example.com",
+              "workspaceId": "466206000000071000",
+              "orgId": "700000123456"
+            }
+          ]
+        ]
+      },
+      "OrgDashboardPageDetails": {
+        "type": "object",
+        "title": "OrgDashboardPageDetails",
+        "description": "JSONObject that holds the paging information of the result. It is always present.",
+        "properties": {
+          "pageNo": {
+            "type": "integer",
+            "description": "The page that was returned.",
+            "examples": [
+              1
+            ]
+          },
+          "recordsPerPage": {
+            "type": "integer",
+            "description": "The page size that was used.",
+            "examples": [
+              100
+            ]
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "description": "Returns true when at least one more dashboard exists after this page. It is worked out after duplicate entries, and entries a custom role does not allow, have been removed from the page, so a page can hold fewer entries than recordsPerPage."
+          }
+        },
+        "examples": [
+          {
+            "pageNo": 1,
+            "recordsPerPage": 2,
+            "hasNextPage": true
+          }
+        ]
+      },
+      "GetOrgDashboardsResponse": {
+        "type": "object",
+        "title": "GetOrgDashboardsResponse",
+        "description": "Response returned by the Get Org Dashboards API.",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Status of the API request.",
+            "enum": [
+              "success",
+              "failure"
+            ],
+            "x-enumDescriptions": {
+              "success": "Request succeeded",
+              "failure": "Request failed"
+            }
+          },
+          "summary": {
+            "type": "string",
+            "description": "Short summary of the operation performed.",
+            "examples": [
+              "Get dashboards"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "description": "Container that holds the dashboards on this page and the paging information.",
+            "properties": {
+              "views": {
+                "$ref": "#/components/schemas/OrgDashboardList"
+              },
+              "pageDetails": {
+                "$ref": "#/components/schemas/OrgDashboardPageDetails"
+              }
+            }
+          }
+        },
+        "examples": [
+          {
+            "status": "success",
+            "summary": "Get dashboards",
+            "data": {
+              "views": [
+                {
+                  "viewId": "466206000000106002",
+                  "viewName": "Support Overview",
+                  "viewDesc": "Open tickets by priority",
+                  "viewType": "Dashboard",
+                  "parentViewId": "",
+                  "folderId": "466206000000071005",
+                  "createdTime": "1718361737000",
+                  "createdBy": "jane.doe@example.com",
+                  "lastModifiedTime": "1720000000000",
+                  "lastModifiedBy": "jane.doe@example.com",
+                  "isFavorite": true,
+                  "sharedBy": "jane.doe@example.com",
+                  "workspaceId": "466206000000071000",
+                  "orgId": "700000123456"
+                },
+                {
+                  "viewId": "466206000000106003",
+                  "viewName": "Support Backlog",
+                  "viewDesc": "",
+                  "viewType": "Dashboard",
+                  "parentViewId": "",
+                  "folderId": "null",
+                  "createdTime": "1707286805000",
+                  "createdBy": "jane.doe@example.com",
+                  "lastModifiedTime": "1719000000000",
+                  "lastModifiedBy": "john.roe@example.com",
+                  "isFavorite": false,
+                  "sharedBy": "jane.doe@example.com",
+                  "workspaceId": "466206000000071000",
+                  "orgId": "700000123456"
+                }
+              ],
+              "pageDetails": {
+                "pageNo": 1,
+                "recordsPerPage": 2,
+                "hasNextPage": true
+              }
+            }
+          }
+        ]
+      },
+      "OrgRecentItem": {
+        "type": "object",
+        "title": "OrgRecentItem",
+        "description": "JSONObject that holds one view the calling user opened recently.",
+        "properties": {
+          "viewId": {
+            "type": "string",
+            "description": "ID of the view.",
+            "examples": [
+              "466206000000106002"
+            ]
+          },
+          "viewName": {
+            "type": "string",
+            "description": "Name of the view as it was recorded in the recent-items entry. It is not looked up live.",
+            "examples": [
+              "Support Overview"
+            ]
+          },
+          "viewType": {
+            "type": "string",
+            "description": "Type of the view.",
+            "enum": [
+              "Table",
+              "Report",
+              "AnalysisView",
+              "Pivot",
+              "SummaryView",
+              "QueryTable",
+              "Dashboard",
+              "PipelineTable",
+              "DataModelObject"
+            ],
+            "x-enumDescriptions": {
+              "Table": "A table",
+              "Report": "A tabular view",
+              "AnalysisView": "A chart view",
+              "Pivot": "A pivot view",
+              "SummaryView": "A summary view",
+              "QueryTable": "A query table",
+              "Dashboard": "A dashboard",
+              "PipelineTable": "A pipeline table",
+              "DataModelObject": "A data model object"
+            }
+          },
+          "workspaceId": {
+            "type": "string",
+            "description": "ID of the workspace that holds the view.",
+            "examples": [
+              "466206000000071000"
+            ]
+          },
+          "workspaceName": {
+            "type": "string",
+            "description": "Name of the workspace as it was recorded in the recent-items entry. It is not looked up live.",
+            "examples": [
+              "Support Metrics"
+            ]
+          },
+          "viewLastAccessedTime": {
+            "type": "string",
+            "description": "Time the caller last opened the view, as epoch milliseconds returned as a string.",
+            "examples": [
+              "1720100000000"
+            ]
+          }
+        },
+        "examples": [
+          {
+            "viewId": "466206000000106002",
+            "viewName": "Support Overview",
+            "viewType": "Dashboard",
+            "workspaceId": "466206000000071000",
+            "workspaceName": "Support Metrics",
+            "viewLastAccessedTime": "1720100000000"
+          }
+        ]
+      },
+      "OrgRecentItemList": {
+        "type": "array",
+        "title": "OrgRecentItemList",
+        "description": "JSONArray that holds the recent items of the calling user, newest first. It is always present, holds at most 20 entries, and is empty when the caller has no visible history in the organisation.",
+        "items": {
+          "$ref": "#/components/schemas/OrgRecentItem"
+        },
+        "examples": [
+          [
+            {
+              "viewId": "466206000000106002",
+              "viewName": "Support Overview",
+              "viewType": "Dashboard",
+              "workspaceId": "466206000000071000",
+              "workspaceName": "Support Metrics",
+              "viewLastAccessedTime": "1720100000000"
+            },
+            {
+              "viewId": "137687000006991601",
+              "viewName": "Revenue by Region",
+              "viewType": "AnalysisView",
+              "workspaceId": "137687000271334001",
+              "workspaceName": "Sales Analysis",
+              "viewLastAccessedTime": "1720090000000"
+            },
+            {
+              "viewId": "466206000000105001",
+              "viewName": "Tickets",
+              "viewType": "Table",
+              "workspaceId": "466206000000071000",
+              "workspaceName": "Support Metrics",
+              "viewLastAccessedTime": "1720000000000"
+            }
+          ]
+        ]
+      },
+      "GetOrgRecentItemsResponse": {
+        "type": "object",
+        "title": "GetOrgRecentItemsResponse",
+        "description": "Response returned by the Get Org Recent Items API.",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Status of the API request.",
+            "enum": [
+              "success",
+              "failure"
+            ],
+            "x-enumDescriptions": {
+              "success": "Request succeeded",
+              "failure": "Request failed"
+            }
+          },
+          "summary": {
+            "type": "string",
+            "description": "Short summary of the operation performed.",
+            "examples": [
+              "Get recent views"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "description": "Container that holds the recent-item list.",
+            "properties": {
+              "views": {
+                "$ref": "#/components/schemas/OrgRecentItemList"
+              }
+            }
+          }
+        },
+        "examples": [
+          {
+            "status": "success",
+            "summary": "Get recent views",
+            "data": {
+              "views": [
+                {
+                  "viewId": "466206000000106002",
+                  "viewName": "Support Overview",
+                  "viewType": "Dashboard",
+                  "workspaceId": "466206000000071000",
+                  "workspaceName": "Support Metrics",
+                  "viewLastAccessedTime": "1720100000000"
+                },
+                {
+                  "viewId": "137687000006991601",
+                  "viewName": "Revenue by Region",
+                  "viewType": "AnalysisView",
+                  "workspaceId": "137687000271334001",
+                  "workspaceName": "Sales Analysis",
+                  "viewLastAccessedTime": "1720090000000"
+                },
+                {
+                  "viewId": "466206000000105001",
+                  "viewName": "Tickets",
+                  "viewType": "Table",
+                  "workspaceId": "466206000000071000",
+                  "workspaceName": "Support Metrics",
+                  "viewLastAccessedTime": "1720000000000"
+                }
+              ]
             }
           }
         ]
